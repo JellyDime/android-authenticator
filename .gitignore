@@ -41,3 +41,5 @@ shared/*/build
 !.idea/codeStyles/
 !.idea/inspectionProfiles/
 !.idea/runConfigurations/
+
+.claude
