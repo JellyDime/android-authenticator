@@ -55,15 +55,29 @@ fun CameraQrScan(
         mutableStateOf(Rect.Zero)
     }
 
-    val cameraProvider = remember {
-        ProcessCameraProvider.getInstance(context)
-            .get()
+    var cameraProvider by remember {
+        mutableStateOf<ProcessCameraProvider?>(null)
     }
 
     val cameraSelector = remember {
         CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
             .build()
+    }
+
+    LaunchedEffect(Unit) {
+        runCatching {
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+            cameraProviderFuture.addListener({
+                runCatching {
+                    cameraProvider = cameraProviderFuture.get()
+                }.onFailure { _: Throwable ->
+                    onCameraError()
+                }
+            }, ContextCompat.getMainExecutor(context))
+        }.onFailure { _: Throwable ->
+            onCameraError()
+        }
     }
 
     val preview = remember {
@@ -103,14 +117,30 @@ fun CameraQrScan(
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
 
-            cameraProvider.unbindAll()
+            cameraProvider?.unbindAll()
+        }
+    }
+
+    LaunchedEffect(cameraProvider) {
+        val provider = cameraProvider ?: return@LaunchedEffect
+
+        runCatching {
+            provider.unbindAll()
+            provider.bindToLifecycle(
+                lifecycleOwner,
+                cameraSelector,
+                preview,
+                imageAnalysis
+            )
+        }.onFailure { _: Throwable ->
+            onCameraError()
         }
     }
 
     AndroidView(
         modifier = modifier,
         factory = { factoryContext ->
-            val previewView = PreviewView(factoryContext).apply {
+            PreviewView(factoryContext).apply {
                 scaleType = PreviewView.ScaleType.FILL_CENTER
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -124,26 +154,9 @@ fun CameraQrScan(
                         height = height.toFloat()
                     )
                 }
+
+                preview.surfaceProvider = surfaceProvider
             }
-
-            preview.surfaceProvider = previewView.surfaceProvider
-
-            try {
-                cameraProvider.bindToLifecycle(
-                    lifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageAnalysis
-                )
-            } catch (_: IllegalStateException) {
-                onCameraError()
-            } catch (_: IllegalArgumentException) {
-                onCameraError()
-            } catch (_: UnsupportedOperationException) {
-                onCameraError()
-            }
-
-            previewView
         }
     )
 
