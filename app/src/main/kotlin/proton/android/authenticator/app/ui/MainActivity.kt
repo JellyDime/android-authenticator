@@ -52,6 +52,7 @@ import proton.android.authenticator.features.unlock.master.ui.UnlockMasterScreen
 import proton.android.authenticator.navigation.domain.commands.NavigationCommand
 import proton.android.authenticator.navigation.domain.commands.NavigationCommandHandler
 import proton.android.authenticator.navigation.domain.navigators.NavigationNavigator
+import proton.android.authenticator.shared.ui.domain.theme.Theme
 import proton.android.authenticator.shared.ui.domain.theme.isDarkTheme
 import javax.inject.Inject
 
@@ -99,23 +100,21 @@ internal class MainActivity : FragmentActivity() {
                                 val navController = rememberNavController(bottomSheetNavigator)
                                 setSecureMode(isSecure = state.isBiometricLockEnabled)
 
-                                isDarkTheme(state.themeType)
-                                    .also(::setStatusBarTheme)
-                                    .also { isDarkTheme ->
-                                        navigationNavigator.NavGraphs(
-                                            isDarkTheme = isDarkTheme,
-                                            bottomSheetNavigator = bottomSheetNavigator,
-                                            navController = navController,
-                                            onAskForReview = {
-                                                viewModel.askForReviewIfApplicable(state)
-                                            },
-                                            onFinishLaunching = {
-                                                viewModel.setInstallationTimeIfFirstRun(state)
-                                            },
-                                            onLaunchNavigationFlow = viewModel::onLaunchNavigationFlow
-                                        )
-                                    }
+                                val isDarkTheme = isDarkTheme(state.themeType)
+                                setStatusBarTheme(isDarkTheme)
 
+                                navigationNavigator.NavGraphs(
+                                    isDarkTheme = isDarkTheme,
+                                    bottomSheetNavigator = bottomSheetNavigator,
+                                    navController = navController,
+                                    onAskForReview = {
+                                        viewModel.askForReviewIfApplicable(state)
+                                    },
+                                    onFinishLaunching = {
+                                        viewModel.setInstallationTimeIfFirstRun(state)
+                                    },
+                                    onLaunchNavigationFlow = viewModel::onLaunchNavigationFlow
+                                )
 
                                 // The lock screen must be displayed immediately,
                                 // without relying on any asynchronous system
@@ -125,21 +124,23 @@ internal class MainActivity : FragmentActivity() {
                                     enter = EnterTransition.None,
                                     exit = fadeOut()
                                 ) {
-                                    UnlockMasterScreen(
-                                        onUnlockClosed = {
-                                            NavigationCommand.FinishAffinity(
-                                                context = context
-                                            ).also {
-                                                navigationCommandHandler.handle(it, navController)
+                                    Theme(isDarkTheme = isDarkTheme) {
+                                        UnlockMasterScreen(
+                                            onUnlockClosed = {
+                                                NavigationCommand.FinishAffinity(
+                                                    context = context
+                                                ).also {
+                                                    navigationCommandHandler.handle(it, navController)
+                                                }
+                                            },
+                                            onUnlockSucceeded = {
+                                                navigationCommandHandler.handle(
+                                                    NavigationCommand.NavigateUp,
+                                                    navController
+                                                )
                                             }
-                                        },
-                                        onUnlockSucceeded = {
-                                            navigationCommandHandler.handle(
-                                                NavigationCommand.NavigateUp,
-                                                navController
-                                            )
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }
