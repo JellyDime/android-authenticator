@@ -25,6 +25,7 @@ import proton.android.authenticator.shared.common.domain.answers.Answer
 import proton.android.authenticator.shared.common.domain.infrastructure.commands.CommandHandler
 import proton.android.authenticator.shared.common.logs.AuthenticatorLogger
 import java.io.FileNotFoundException
+import java.io.IOException
 import javax.inject.Inject
 
 @Suppress("LongMethod")
@@ -90,6 +91,13 @@ internal class ImportEntriesCommandHandler @Inject constructor(
         ErrorLoggingUtils.logAndReturnFailure(
             exception = e,
             message = "Could not import entries due to file not found",
+            reason = ImportEntriesReason.BadContent,
+            tag = TAG
+        )
+    } catch (e: IOException) {
+        ErrorLoggingUtils.logAndReturnFailure(
+            exception = e,
+            message = "Could not import entries due to I/O error",
             reason = ImportEntriesReason.BadContent,
             tag = TAG
         )

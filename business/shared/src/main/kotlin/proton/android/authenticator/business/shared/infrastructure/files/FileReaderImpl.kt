@@ -27,8 +27,10 @@ import kotlinx.coroutines.withContext
 import proton.android.authenticator.business.shared.domain.errors.FileTooLargeException
 import proton.android.authenticator.business.shared.domain.infrastructure.files.FileReader
 import proton.android.authenticator.shared.common.domain.dispatchers.AppDispatchers
-import java.io.BufferedReader
+import proton.android.authenticator.shared.common.logs.AuthenticatorLogger
 import java.io.ByteArrayOutputStream
+import java.io.FileNotFoundException
+import java.io.IOException
 import javax.inject.Inject
 
 internal class FileReaderImpl @Inject constructor(
@@ -40,13 +42,31 @@ internal class FileReaderImpl @Inject constructor(
     override suspend fun readText(path: String): String = withContext(appDispatchers.io) {
         path.toUri().let { pathUri ->
             val document = DocumentFile.fromSingleUri(context, pathUri)
-            if (document?.exists() == true && document.isFile) {
-                contentResolver.openInputStream(pathUri)
-                    ?.bufferedReader()
-                    ?.use(BufferedReader::readText)
-                    .orEmpty()
-            } else {
-                ""
+            when {
+                document == null -> {
+                    AuthenticatorLogger.w(TAG, "Cannot read file: DocumentFile is null for URI: $pathUri")
+                    throw FileNotFoundException("Cannot access file at URI: $pathUri")
+                }
+                !document.exists() -> {
+                    AuthenticatorLogger.w(TAG, "Cannot read file: File does not exist at URI: $pathUri")
+                    throw FileNotFoundException("File does not exist at URI: $pathUri")
+                }
+                !document.isFile -> {
+                    AuthenticatorLogger.w(TAG, "Cannot read file: URI points to directory: $pathUri")
+                    throw IllegalArgumentException("URI must point to a file, not a directory: $pathUri")
+                }
+                else -> {
+                    contentResolver.openInputStream(pathUri)?.bufferedReader()?.use { reader ->
+                        val content = reader.readText()
+                        if (content.isEmpty()) {
+                            AuthenticatorLogger.w(TAG, "File is empty at URI: $pathUri")
+                        }
+                        content
+                    } ?: run {
+                        AuthenticatorLogger.w(TAG, "Cannot open input stream for URI: $pathUri")
+                        throw IOException("Cannot open file for reading: $pathUri")
+                    }
+                }
             }
         }
     }
@@ -54,26 +74,47 @@ internal class FileReaderImpl @Inject constructor(
     override suspend fun readBinary(path: String, maxSize: Int): ByteArray = withContext(appDispatchers.io) {
         path.toUri().let { pathUri ->
             val document = DocumentFile.fromSingleUri(context, pathUri)
-            if (document?.exists() == true && document.isFile) {
-                contentResolver.openInputStream(pathUri)?.use { inputStream ->
-                    if (inputStream.available() > maxSize) throw FileTooLargeException(maxSize)
-                    val outputStream = ByteArrayOutputStream()
-                    val buffer = ByteArray(1_024)
-                    var bytesRead: Int
-                    while (true) {
-                        bytesRead = inputStream.read(buffer)
-                        if (bytesRead == -1) {
-                            break
+            when {
+                document == null -> {
+                    AuthenticatorLogger.w(TAG, "Cannot read file: DocumentFile is null for URI: $pathUri")
+                    throw FileNotFoundException("Cannot access file at URI: $pathUri")
+                }
+                !document.exists() -> {
+                    AuthenticatorLogger.w(TAG, "Cannot read file: File does not exist at URI: $pathUri")
+                    throw FileNotFoundException("File does not exist at URI: $pathUri")
+                }
+                !document.isFile -> {
+                    AuthenticatorLogger.w(TAG, "Cannot read file: URI points to directory: $pathUri")
+                    throw IllegalArgumentException("URI must point to a file, not a directory: $pathUri")
+                }
+                else -> {
+                    contentResolver.openInputStream(pathUri)?.use { inputStream ->
+                        if (inputStream.available() > maxSize) throw FileTooLargeException(maxSize)
+                        val outputStream = ByteArrayOutputStream()
+                        val buffer = ByteArray(1_024)
+                        var bytesRead: Int
+                        while (true) {
+                            bytesRead = inputStream.read(buffer)
+                            if (bytesRead == -1) {
+                                break
+                            }
+                            outputStream.write(buffer, 0, bytesRead)
                         }
-                        outputStream.write(buffer, 0, bytesRead)
+                        val data = outputStream.toByteArray()
+                        if (data.isEmpty()) {
+                            AuthenticatorLogger.w(TAG, "File is empty at URI: $pathUri")
+                        }
+                        data
+                    } ?: run {
+                        AuthenticatorLogger.w(TAG, "Cannot open input stream for URI: $pathUri")
+                        throw IOException("Cannot open file for reading: $pathUri")
                     }
-                    outputStream.toByteArray()
-                } ?: byteArrayOf()
-            } else {
-                byteArrayOf()
+                }
             }
         }
     }
 
-
+    private companion object {
+        private const val TAG = "FileReaderImpl"
+    }
 }
