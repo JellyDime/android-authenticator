@@ -42,4 +42,4 @@ shared/*/build
 !.idea/inspectionProfiles/
 !.idea/runConfigurations/
 
-.claude
+.claude/settings.local.json
