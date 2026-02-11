@@ -23,17 +23,24 @@ import proton.android.authenticator.business.entries.application.syncall.SyncEnt
 import proton.android.authenticator.business.entries.application.syncall.SyncEntriesReason
 import proton.android.authenticator.business.entries.application.syncall.SyncEntry
 import proton.android.authenticator.business.entries.application.syncall.SyncKey
-import proton.android.authenticator.features.shared.keys.usecases.GetKeyUseCase
+import proton.android.authenticator.features.shared.keys.usecases.GetAllKeysUseCase
+import proton.android.authenticator.features.shared.usecases.settings.ObserveSettingsUseCase
+import proton.android.authenticator.features.shared.usecases.settings.UpdateSettingsUseCase
+import proton.android.authenticator.features.shared.usecases.snackbars.DispatchSnackbarEventUseCase
 import proton.android.authenticator.features.shared.users.usecases.ObserveUserUseCase
 import proton.android.authenticator.shared.common.domain.answers.Answer
 import proton.android.authenticator.shared.common.domain.infrastructure.commands.CommandBus
+import proton.android.authenticator.shared.common.domain.models.SnackbarEvent
 import javax.inject.Inject
 
 class SyncEntriesModelsUseCase @Inject constructor(
     private val commandBus: CommandBus,
-    private val getKeyUseCase: GetKeyUseCase,
+    private val dispatchSnackbarEventUseCase: DispatchSnackbarEventUseCase,
+    private val getAllKeysUseCase: GetAllKeysUseCase,
     private val observeUserUseCase: ObserveUserUseCase,
-    private val observeEntryModelsUseCase: ObserveEntryModelsUseCase
+    private val observeEntryModelsUseCase: ObserveEntryModelsUseCase,
+    private val observeSettingsUseCase: ObserveSettingsUseCase,
+    private val updateSettingsUseCase: UpdateSettingsUseCase
 ) {
 
     suspend operator fun invoke(): Answer<Unit, SyncEntriesReason> {
@@ -41,7 +48,9 @@ class SyncEntriesModelsUseCase @Inject constructor(
             return Answer.Failure(reason = SyncEntriesReason.UserNotFound)
         }
 
-        val key = getKeyUseCase() ?: run {
+        val keys = getAllKeysUseCase()
+            .ifEmpty { getAllKeysUseCase(forceRefresh = true) }
+        if (keys.isEmpty()) {
             return Answer.Failure(reason = SyncEntriesReason.KeyNotFound)
         }
 
@@ -66,14 +75,44 @@ class SyncEntriesModelsUseCase @Inject constructor(
             .let { syncEntries ->
                 SyncEntriesCommand(
                     userId = user.id,
-                    key = SyncKey(
-                        id = key.id,
-                        encryptedKey = key.encryptedKey
-                    ),
+                    keys = keys.map { key ->
+                        SyncKey(
+                            id = key.id,
+                            encryptedKey = key.encryptedKey
+                        )
+                    },
                     entries = syncEntries
                 )
             }
-            .let { command -> commandBus.dispatch(command = command) }
+            .let { command ->
+                val result: Answer<Int, SyncEntriesReason> = commandBus.dispatch(command = command)
+                if (result is Answer.Success && result.data > 0) {
+                    showUndecryptableEntriesWarning(result.data)
+                }
+                when (result) {
+                    is Answer.Success -> Answer.Success(Unit)
+                    is Answer.Failure -> Answer.Failure(result.reason)
+                }
+            }
+    }
+
+    private suspend fun showUndecryptableEntriesWarning(count: Int) {
+        val settings = observeSettingsUseCase().first()
+
+        if (!settings.isUndecryptableEntriesWarningDismissed) {
+            dispatchSnackbarEventUseCase(
+                SnackbarEvent(
+                    messageResId = proton.android.authenticator.features.shared.R.string.warning_undecryptable_entries,
+                    action = SnackbarEvent.Action(
+                        nameResId = proton.android.authenticator.features.shared.R.string.action_dismiss,
+                        onAction = {
+                            val currentSettings = observeSettingsUseCase().first()
+                            updateSettingsUseCase(currentSettings.copy(isUndecryptableEntriesWarningDismissed = true))
+                        }
+                    )
+                )
+            )
+        }
     }
 
 }

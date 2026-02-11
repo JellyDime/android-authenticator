@@ -30,20 +30,20 @@ data object ErrorLoggingUtils {
     /**
      * Logs an error and returns a failure answer with the specified reason.
      *
-     * @param exception The exception that occurred
+     * @param throwable The exception that occurred
      * @param message The error message to log
      * @param reason The failure reason to return
      * @param tag The tag for logging (usually the class name)
      * @return An Answer.Failure with the specified reason
      */
     inline fun <reified T : AnswerReason> logAndReturnFailure(
-        exception: Exception,
+        throwable: Throwable,
         message: String,
         reason: T,
         tag: String
     ): Answer<Nothing, T> {
         AuthenticatorLogger.w(tag, message)
-        AuthenticatorLogger.w(tag, exception)
+        AuthenticatorLogger.w(tag, throwable)
         return Answer.Failure(reason = reason)
     }
 }

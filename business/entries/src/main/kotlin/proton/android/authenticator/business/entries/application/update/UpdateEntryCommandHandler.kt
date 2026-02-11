@@ -46,28 +46,28 @@ internal class UpdateEntryCommandHandler @Inject constructor(
             .let(Answer<Unit, UpdateEntryReason>::Success)
     } catch (e: AuthenticatorException.InvalidName) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not update entry due to invalid name",
             reason = UpdateEntryReason.InvalidEntryTitle,
             tag = TAG
         )
     } catch (e: AuthenticatorException.InvalidSecret) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not update entry due to invalid secret",
             reason = UpdateEntryReason.InvalidEntrySecret,
             tag = TAG
         )
     } catch (e: AuthenticatorException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not update entry due to authenticator exception",
             reason = UpdateEntryReason.Unknown,
             tag = TAG
         )
     } catch (e: IllegalStateException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not update entry due to entry not found",
             reason = UpdateEntryReason.EntryNotFound,
             tag = TAG

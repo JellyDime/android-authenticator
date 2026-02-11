@@ -25,12 +25,12 @@ import proton.android.authenticator.features.shared.users.usecases.ObserveUserUs
 import proton.android.authenticator.shared.common.domain.infrastructure.queries.QueryBus
 import javax.inject.Inject
 
-class GetKeyUseCase @Inject constructor(
+class GetAllKeysUseCase @Inject constructor(
     private val queryBus: QueryBus,
     private val observeUserUseCase: ObserveUserUseCase
 ) {
 
-    suspend operator fun invoke(forceRefresh: Boolean = false): Key? = observeUserUseCase()
+    suspend operator fun invoke(forceRefresh: Boolean = false): List<Key> = observeUserUseCase()
         .first()
         ?.let { user ->
             FindAllKeysQuery(
@@ -40,6 +40,6 @@ class GetKeyUseCase @Inject constructor(
         }
         ?.let { query -> queryBus.ask<List<Key>>(query) }
         ?.first()
-        ?.firstOrNull()
+        .orEmpty()
 
 }

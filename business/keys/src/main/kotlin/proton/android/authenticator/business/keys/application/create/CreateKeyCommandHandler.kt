@@ -38,14 +38,14 @@ internal class CreateKeyCommandHandler @Inject constructor(
     } catch (exception: ApiException) {
         if (exception.getErrorCode() == ERROR_CODE_KEY_ALREADY_EXISTS) {
             ErrorLoggingUtils.logAndReturnFailure(
-                exception = exception,
+                throwable = exception,
                 message = "Could not create key due to key already exists",
                 reason = CreateKeyReason.KeyAlreadyExists,
                 tag = TAG
             )
         } else {
             ErrorLoggingUtils.logAndReturnFailure(
-                exception = exception,
+                throwable = exception,
                 message = "Could not create key due to API call failure",
                 reason = CreateKeyReason.ApiCallFailed,
                 tag = TAG
@@ -53,14 +53,14 @@ internal class CreateKeyCommandHandler @Inject constructor(
         }
     } catch (e: CryptoException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not create key due to crypto failure",
             reason = CreateKeyReason.CryptoFailed,
             tag = TAG
         )
     } catch (e: IllegalStateException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not create key due to key generation failure",
             reason = CreateKeyReason.KeyGenerationFailed,
             tag = TAG

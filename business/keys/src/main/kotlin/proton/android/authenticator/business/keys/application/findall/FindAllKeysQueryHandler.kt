@@ -28,6 +28,9 @@ internal class FindAllKeysQueryHandler @Inject constructor(
 ) : QueryHandler<FindAllKeysQuery, List<Key>> {
 
     override fun handle(query: FindAllKeysQuery): Flow<List<Key>> = finder
-        .findAll(userId = query.userId)
+        .findAll(
+            userId = query.userId,
+            forceRefresh = query.forceRefresh
+        )
 
 }

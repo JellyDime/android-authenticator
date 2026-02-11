@@ -42,26 +42,22 @@ internal class KeyCreator @Inject constructor(
 
     @OptIn(ExperimentalEncodingApi::class)
     internal suspend fun create(userId: String) {
-        UserId(id = userId)
-            .let { sessionUserId ->
-                userRepository.getUser(sessionUserId = sessionUserId)
+        val user = userRepository.getUser(sessionUserId = UserId(id = userId))
+
+        val encodedEncryptedKey = withContext(appDispatchers.default) {
+            val generatedKey = EncryptionKey.generate().asByteArray()
+            val encryptedAndSigned = user.tryUseKeys(message = KEY_MESSAGE, cryptoContext) {
+                encryptAndSignData(generatedKey)
             }
-            .let { user ->
-                withContext(appDispatchers.default) {
-                    user.tryUseKeys(message = KEY_MESSAGE, cryptoContext) {
-                        encryptAndSignData(EncryptionKey.generate().asByteArray())
-                    }
-                        .let { cryptoContext.pgpCrypto.getUnarmored(it) }
-                        .let(Base64::encodeToByteArray)
-                        .let(::String)
-                }
-            }
-            .let { encodedEncryptedKey ->
-                api.create(userId = userId, encryptedKey = encodedEncryptedKey)
-            }
-            ?.also { key ->
-                repository.save(key = key)
-            }
+            val unarmored = cryptoContext.pgpCrypto.getUnarmored(encryptedAndSigned)
+            val encoded = Base64.encodeToByteArray(unarmored)
+            String(encoded)
+        }
+
+        val key = api.create(userId = userId, encryptedKey = encodedEncryptedKey)
+        if (key != null) {
+            repository.save(key = key)
+        }
     }
 
     private companion object {

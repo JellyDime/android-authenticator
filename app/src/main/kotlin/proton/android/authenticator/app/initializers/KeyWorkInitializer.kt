@@ -24,6 +24,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.startup.Initializer
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -73,7 +74,13 @@ internal class KeyWorkInitializer : Initializer<Unit> {
                     .build()
             )
             .build()
-            .also(workManager::enqueue)
+            .also { workRequest ->
+                workManager.enqueueUniqueWork(
+                    KEY_WORK_UNIQUE_NAME,
+                    ExistingWorkPolicy.KEEP,
+                    workRequest
+                )
+            }
     }
 
     override fun dependencies(): List<Class<out Initializer<*>?>?> = emptyList()
@@ -92,6 +99,7 @@ internal class KeyWorkInitializer : Initializer<Unit> {
     private companion object {
 
         private const val KEY_WORK_TAG = "key_work"
+        private const val KEY_WORK_UNIQUE_NAME = "key_work_unique"
 
         private const val KEY_WORK_BACKOFF_DELAY_SECONDS = 5L
 

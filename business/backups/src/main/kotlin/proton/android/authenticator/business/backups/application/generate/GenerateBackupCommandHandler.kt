@@ -41,35 +41,35 @@ internal class GenerateBackupCommandHandler @Inject constructor(
             .let(Answer<Unit, GenerateBackupReason>::Success)
     } catch (e: BackupNoEntriesError) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not generate backup due to no entries",
             reason = GenerateBackupReason.NoEntries,
             tag = TAG
         )
     } catch (e: BackupNotEnabledError) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not generate backup due to backup not enabled",
             reason = GenerateBackupReason.NotEnabled,
             tag = TAG
         )
     } catch (e: BackupMissingFileNameError) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not generate backup due to missing file name",
             reason = GenerateBackupReason.MissingFileName,
             tag = TAG
         )
     } catch (e: BackupFileCreationError) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not generate backup due to file creation failure",
             reason = GenerateBackupReason.FileCreationFailed,
             tag = TAG
         )
     } catch (e: IOException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not generate backup due to IO exception",
             reason = GenerateBackupReason.CannotGenerate,
             tag = TAG

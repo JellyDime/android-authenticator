@@ -38,28 +38,28 @@ internal class CreateEntryCommandHandler @Inject constructor(
         Answer.Success(Unit)
     } catch (e: AuthenticatorException.InvalidName) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not create entry due to invalid name",
             reason = CreateEntryReason.InvalidEntryTitle,
             tag = TAG
         )
     } catch (e: AuthenticatorException.InvalidSecret) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not create entry due to invalid secret",
             reason = CreateEntryReason.InvalidEntrySecret,
             tag = TAG
         )
     } catch (e: AuthenticatorException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not create entry due to authenticator exception",
             reason = CreateEntryReason.Unknown,
             tag = TAG
         )
     } catch (e: IllegalStateException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not create entry due to save failure",
             reason = CreateEntryReason.CannotSaveEntry,
             tag = TAG

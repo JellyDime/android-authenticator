@@ -20,4 +20,7 @@ package proton.android.authenticator.business.keys.application.findall
 
 import proton.android.authenticator.shared.common.domain.infrastructure.queries.Query
 
-data class FindAllKeysQuery(internal val userId: String) : Query
+data class FindAllKeysQuery(
+    internal val userId: String,
+    internal val forceRefresh: Boolean = false
+) : Query

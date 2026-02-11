@@ -35,7 +35,7 @@ internal class UpdateBackupCommandHandler @Inject constructor(
         Answer.Success(Unit)
     } catch (e: IOException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not update backup due to save failure",
             reason = UpdateBackupReason.CannotSaveBackup,
             tag = TAG

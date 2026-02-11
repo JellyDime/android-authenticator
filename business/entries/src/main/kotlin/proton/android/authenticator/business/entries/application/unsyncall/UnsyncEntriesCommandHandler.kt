@@ -35,7 +35,7 @@ internal class UnsyncEntriesCommandHandler @Inject constructor(
     } catch (exception: IllegalStateException) {
         ErrorLoggingUtils.logAndReturnFailure(
             tag = TAG,
-            exception = exception,
+            throwable = exception,
             reason = UnsyncEntriesReason.CannotUnsyncEntries,
             message = "Could not unsync entries due to database operation error"
         )

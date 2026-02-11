@@ -25,13 +25,6 @@ internal abstract class EntriesApi {
 
     protected val contentFormatVersion = CONTENT_FORMAT_VERSION
 
-    internal abstract suspend fun create(
-        userId: String,
-        keyId: String,
-        encryptionKey: EncryptionKey,
-        entryModel: AuthenticatorEntryModel
-    )
-
     internal abstract suspend fun createAll(
         userId: String,
         keyId: String,
@@ -41,7 +34,7 @@ internal abstract class EntriesApi {
 
     internal abstract suspend fun deleteAll(userId: String, entryIds: List<String>)
 
-    internal abstract suspend fun fetchAll(userId: String, encryptionKey: EncryptionKey): List<EntryRemote>
+    internal abstract suspend fun fetchAll(userId: String, encryptionKeys: List<EncryptionKey>): FetchEntriesResult
 
     internal abstract suspend fun sortAll(
         userId: String,

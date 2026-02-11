@@ -35,6 +35,7 @@ internal data class SettingsMasterSettingsModel(
     internal val sortingType: SettingsSortingType,
     internal val isCodeChangeAnimationEnabled: Boolean,
     internal val isPassBannerDismissed: Boolean,
+    internal val isUndecryptableEntriesWarningDismissed: Boolean,
     internal val isFirstRun: Boolean,
     internal val installationTime: Long?
 ) {
@@ -78,6 +79,7 @@ internal data class SettingsMasterSettingsModel(
         sortingType = sortingType,
         isCodeChangeAnimationEnabled = isCodeChangeAnimationEnabled,
         isPassBannerDismissed = isPassBannerDismissed,
+        isUndecryptableEntriesWarningDismissed = isUndecryptableEntriesWarningDismissed,
         isFirstRun = isFirstRun,
         installationTime = installationTime
     )

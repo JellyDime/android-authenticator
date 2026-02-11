@@ -34,6 +34,5 @@ fun <T> KeyHolder.tryUseKeys(
     useKeys(cryptoContext) { block() }
 }.getOrElse { error ->
     AuthenticatorLogger.w(TAG, "Error using user keys for $message")
-    AuthenticatorLogger.e(TAG, error)
     throw error
 }

@@ -18,6 +18,7 @@
 
 package proton.android.authenticator.business.entries.application.syncall
 
+import kotlinx.coroutines.CancellationException
 import me.proton.core.network.domain.ApiException
 import proton.android.authenticator.business.shared.domain.errors.ErrorLoggingUtils
 import proton.android.authenticator.business.shared.domain.infrastructure.network.getErrorCode
@@ -28,34 +29,57 @@ import javax.inject.Inject
 
 internal class SyncEntriesCommandHandler @Inject constructor(
     private val syncer: EntriesSyncer
-) : CommandHandler<SyncEntriesCommand, Unit, SyncEntriesReason> {
+) : CommandHandler<SyncEntriesCommand, Int, SyncEntriesReason> {
 
-    override suspend fun handle(command: SyncEntriesCommand): Answer<Unit, SyncEntriesReason> = try {
-        syncer.sync(
-            userId = command.userId,
-            key = command.key,
-            entries = command.entries
-        )
-            .also {
+    override suspend fun handle(command: SyncEntriesCommand): Answer<Int, SyncEntriesReason> {
+        return runCatching {
+            AuthenticatorLogger.i(TAG, "Starting sync with ${command.entries.size} local entries")
+            syncer.sync(
+                userId = command.userId,
+                keys = command.keys,
+                entries = command.entries
+            )
+        }.fold(
+            onSuccess = { undecryptableCount ->
                 AuthenticatorLogger.i(TAG, "Successfully synced entries for user: ${command.userId}")
+                Answer.Success(undecryptableCount)
+            },
+            onFailure = { throwable: Throwable ->
+                when (throwable) {
+                    is ApiException -> {
+                        when (ERROR_CODE_UNAUTHORIZED) {
+                            throwable.getErrorCode() ->
+                                ErrorLoggingUtils.logAndReturnFailure(
+                                    tag = TAG,
+                                    throwable = throwable,
+                                    message = "Could not sync entries due to API unauthorized",
+                                    reason = SyncEntriesReason.Unauthorized
+                                )
+                            else ->
+                                ErrorLoggingUtils.logAndReturnFailure(
+                                    tag = TAG,
+                                    throwable = throwable,
+                                    message = "Could not sync entries due to API exception",
+                                    reason = SyncEntriesReason.Unknown
+                                )
+                        }
+                    }
+                    is NoValidSyncKeysException -> ErrorLoggingUtils.logAndReturnFailure(
+                        tag = TAG,
+                        throwable = throwable,
+                        message = "Could not sync entries due to no valid sync keys",
+                        reason = SyncEntriesReason.KeyNotFound
+                    )
+                    is CancellationException -> throw throwable
+                    else -> ErrorLoggingUtils.logAndReturnFailure(
+                        tag = TAG,
+                        throwable = throwable,
+                        message = "Could not sync entries due to unexpected error",
+                        reason = SyncEntriesReason.Unknown
+                    )
+                }
             }
-            .let(Answer<Unit, SyncEntriesReason>::Success)
-    } catch (exception: ApiException) {
-        if (exception.getErrorCode() == ERROR_CODE_UNAUTHORIZED) {
-            ErrorLoggingUtils.logAndReturnFailure(
-                tag = TAG,
-                exception = exception,
-                message = "Could not sync entries due to API unauthorized",
-                reason = SyncEntriesReason.Unauthorized
-            )
-        } else {
-            ErrorLoggingUtils.logAndReturnFailure(
-                tag = TAG,
-                exception = exception,
-                message = "Could not sync entries due to API exception",
-                reason = SyncEntriesReason.Unknown
-            )
-        }
+        )
     }
 
     private companion object {

@@ -41,21 +41,21 @@ internal class ExportEntriesCommandHandler @Inject constructor(
         ErrorLoggingUtils.logAndReturnFailure(
             tag = TAG,
             message = "Could not export entries due to authenticator exception",
-            exception = error,
+            throwable = error,
             reason = ExportEntriesReason.InvalidEntries
         )
     } catch (error: FileNotFoundException) {
         ErrorLoggingUtils.logAndReturnFailure(
             tag = TAG,
             message = "Could not export entries due to file not found",
-            exception = error,
+            throwable = error,
             reason = ExportEntriesReason.InvalidEntries
         )
     } catch (error: IOException) {
         ErrorLoggingUtils.logAndReturnFailure(
             tag = TAG,
             message = "Could not export entries due to IO exception",
-            exception = error,
+            throwable = error,
             reason = ExportEntriesReason.InvalidEntries
         )
     }

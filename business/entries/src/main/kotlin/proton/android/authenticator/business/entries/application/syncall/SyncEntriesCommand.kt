@@ -27,7 +27,7 @@ import proton.android.authenticator.shared.common.domain.infrastructure.commands
 
 data class SyncEntriesCommand(
     internal val userId: String,
-    internal val key: SyncKey,
+    internal val keys: List<SyncKey>,
     internal val entries: List<SyncEntry>
 ) : Command
 

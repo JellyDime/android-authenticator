@@ -16,18 +16,9 @@
  * along with Proton Authenticator.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package proton.android.authenticator.business.keys.domain
+package proton.android.authenticator.business.entries.domain
 
-import kotlinx.coroutines.flow.Flow
-
-internal interface KeysRepository {
-
-    fun findAll(): Flow<List<Key>>
-
-    suspend fun save(key: Key)
-
-    suspend fun saveAll(keys: List<Key>)
-
-    suspend fun deleteAll(keys: List<Key>)
-
-}
+internal data class FetchEntriesResult(
+    val entries: List<EntryRemote>,
+    val undecryptableCount: Int = 0
+)

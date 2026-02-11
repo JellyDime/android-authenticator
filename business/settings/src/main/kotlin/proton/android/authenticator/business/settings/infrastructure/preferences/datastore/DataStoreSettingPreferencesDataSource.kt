@@ -54,6 +54,7 @@ internal class DataStoreSettingPreferencesDataSource @Inject constructor(
                 sortingType = settingsPreferences.sortingType.toDomain(),
                 isCodeChangeAnimationEnabled = settingsPreferences.isCodeChangeAnimationEnabled,
                 isPassBannerDismissed = settingsPreferences.isPassBannerDismissed,
+                isUndecryptableEntriesWarningDismissed = settingsPreferences.isUndecryptableEntriesWarningDismissed,
                 isFirstRun = settingsPreferences.isFirstRun,
                 installationTime = settingsPreferences.installationTime.toEpochMillis()
             )
@@ -71,6 +72,7 @@ internal class DataStoreSettingPreferencesDataSource @Inject constructor(
                 .setSortingType(settings.sortingType.toPreferences())
                 .setIsCodeChangeAnimationEnabled(settings.isCodeChangeAnimationEnabled)
                 .setIsPassBannerDismissed(settings.isPassBannerDismissed)
+                .setIsUndecryptableEntriesWarningDismissed(settings.isUndecryptableEntriesWarningDismissed)
                 .setIsFirstRun(settings.isFirstRun)
                 .setInstallationTime(settings.installationTime?.toProtobufTimestamp())
                 .build()

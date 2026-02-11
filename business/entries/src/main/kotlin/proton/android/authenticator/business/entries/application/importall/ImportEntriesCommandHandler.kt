@@ -54,63 +54,63 @@ internal class ImportEntriesCommandHandler @Inject constructor(
         }.let(Answer<Int, ImportEntriesReason>::Success)
     } catch (e: AuthenticatorImportException.BadContent) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to bad content",
             reason = ImportEntriesReason.BadContent,
             tag = TAG
         )
     } catch (e: AuthenticatorImportException.BadPassword) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to bad password",
             reason = ImportEntriesReason.BadPassword,
             tag = TAG
         )
     } catch (e: AuthenticatorImportException.DecryptionFailed) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to decryption failure",
             reason = ImportEntriesReason.DecryptionFailed,
             tag = TAG
         )
     } catch (e: AuthenticatorImportException.MissingPassword) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to missing password",
             reason = ImportEntriesReason.MissingPassword,
             tag = TAG
         )
     } catch (e: AuthenticatorImportException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to authenticator import exception",
             reason = ImportEntriesReason.BadContent,
             tag = TAG
         )
     } catch (e: FileNotFoundException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to file not found",
             reason = ImportEntriesReason.BadContent,
             tag = TAG
         )
     } catch (e: IOException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to I/O error",
             reason = ImportEntriesReason.BadContent,
             tag = TAG
         )
     } catch (e: FileTooLargeException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to file too large",
             reason = ImportEntriesReason.FileTooLarge,
             tag = TAG
         )
     } catch (e: IllegalArgumentException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not import entries due to illegal argument",
             reason = ImportEntriesReason.BadContent,
             tag = TAG

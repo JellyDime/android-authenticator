@@ -28,6 +28,7 @@ data class Settings(
     val themeType: SettingsThemeType,
     val isCodeChangeAnimationEnabled: Boolean,
     val isPassBannerDismissed: Boolean,
+    val isUndecryptableEntriesWarningDismissed: Boolean,
     val isFirstRun: Boolean,
     val installationTime: Long?
 ) {
@@ -44,6 +45,7 @@ data class Settings(
             sortingType = SettingsSortingType.Manual,
             isCodeChangeAnimationEnabled = false,
             isPassBannerDismissed = false,
+            isUndecryptableEntriesWarningDismissed = false,
             isFirstRun = true,
             installationTime = null
         )

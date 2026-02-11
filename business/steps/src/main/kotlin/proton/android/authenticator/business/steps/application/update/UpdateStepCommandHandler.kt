@@ -35,7 +35,7 @@ internal class UpdateStepCommandHandler @Inject constructor(
         Answer.Success(Unit)
     } catch (e: IOException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not update step due to save failure",
             reason = UpdateStepReason.CannotSaveStep,
             tag = TAG

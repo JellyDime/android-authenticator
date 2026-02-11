@@ -54,28 +54,28 @@ internal class AuthenticateBiometricCommandHandler @Inject constructor(
             when (error.status) {
                 BiometricStatus.Available ->
                     ErrorLoggingUtils.logAndReturnFailure(
-                        exception = error,
+                        throwable = error,
                         message = "Could not authenticate biometric due to unknown status",
                         reason = AuthenticateBiometricReason.Unknown,
                         tag = TAG
                     )
                 BiometricStatus.NotEnrolled ->
                     ErrorLoggingUtils.logAndReturnFailure(
-                        exception = error,
+                        throwable = error,
                         message = "Could not authenticate biometric due to not enrolled",
                         reason = AuthenticateBiometricReason.NotEnrolled,
                         tag = TAG
                     )
                 BiometricStatus.Unavailable ->
                     ErrorLoggingUtils.logAndReturnFailure(
-                        exception = error,
+                        throwable = error,
                         message = "Could not authenticate biometric due to unavailable",
                         reason = AuthenticateBiometricReason.Unavailable,
                         tag = TAG
                     )
                 BiometricStatus.Unsupported ->
                     ErrorLoggingUtils.logAndReturnFailure(
-                        exception = error,
+                        throwable = error,
                         message = "Could not authenticate biometric due to unsupported",
                         reason = AuthenticateBiometricReason.Unsupported,
                         tag = TAG
@@ -83,7 +83,7 @@ internal class AuthenticateBiometricCommandHandler @Inject constructor(
             }
         } catch (e: ClassCastException) {
             ErrorLoggingUtils.logAndReturnFailure(
-                exception = e,
+                throwable = e,
                 message = "Could not authenticate biometric due to wrong context",
                 reason = AuthenticateBiometricReason.WrongContext,
                 tag = TAG

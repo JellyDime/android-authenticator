@@ -35,7 +35,7 @@ internal class UpdateSettingsCommandHandler @Inject constructor(
         Answer.Success(Unit)
     } catch (e: IOException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not update settings due to save failure",
             reason = UpdateSettingsReason.CannotSaveSettings,
             tag = TAG

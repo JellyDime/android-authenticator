@@ -36,7 +36,7 @@ internal class KeyWorker @AssistedInject constructor(
     private val getKeyUseCase: GetKeyUseCase
 ) : CoroutineWorker(context, workerParameters) {
 
-    override suspend fun doWork(): Result = getKeyUseCase()
+    override suspend fun doWork(): Result = getKeyUseCase(forceRefresh = true)
         ?.let { Result.success() }
         ?: createKeyUseCase().let { answer ->
             answer.fold(

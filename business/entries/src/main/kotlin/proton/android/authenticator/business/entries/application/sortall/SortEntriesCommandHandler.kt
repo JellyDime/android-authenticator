@@ -35,7 +35,7 @@ internal class SortEntriesCommandHandler @Inject constructor(
     } catch (exception: IllegalStateException) {
         ErrorLoggingUtils.logAndReturnFailure(
             tag = TAG,
-            exception = exception,
+            throwable = exception,
             message = "Could sort entries due to database error",
             reason = SortEntriesReason.CannotSort
         )

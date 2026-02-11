@@ -38,4 +38,8 @@ internal class KeysRepositoryImpl @Inject constructor(
         localDataSource.insertAll(keys)
     }
 
+    override suspend fun deleteAll(keys: List<Key>) {
+        localDataSource.deleteAll(keys)
+    }
+
 }

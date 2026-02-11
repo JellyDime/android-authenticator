@@ -35,7 +35,7 @@ internal class DeleteEntryCommandHandler @Inject constructor(
         Answer.Success(result)
     } catch (e: IllegalStateException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not delete entry due to entry not found",
             reason = DeleteEntryReason.EntryNotFound,
             tag = TAG

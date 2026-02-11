@@ -34,7 +34,7 @@ internal class RestoreEntryCommandHandler @Inject constructor(
         Answer.Success(Unit)
     } catch (e: IllegalStateException) {
         ErrorLoggingUtils.logAndReturnFailure(
-            exception = e,
+            throwable = e,
             message = "Could not restore entry due to restore failure",
             reason = RestoreEntryReason.CannotRestore,
             tag = TAG

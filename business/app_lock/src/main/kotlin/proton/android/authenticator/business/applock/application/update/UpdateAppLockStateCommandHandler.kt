@@ -38,7 +38,7 @@ internal class UpdateAppLockStateCommandHandler @Inject constructor(
     } catch (exception: IOException) {
         ErrorLoggingUtils.logAndReturnFailure(
             tag = TAG,
-            exception = exception,
+            throwable = exception,
             message = "Could not update app lock state due to IO exception",
             reason = UpdateAppLockStateReason.CannotUpdateAppLockState
         )

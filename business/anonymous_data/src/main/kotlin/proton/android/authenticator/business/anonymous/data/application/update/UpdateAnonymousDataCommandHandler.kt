@@ -38,14 +38,14 @@ internal class UpdateAnonymousDataCommandHandler @Inject constructor(
         if (exception.getErrorCode() == ERROR_CODE_INVALID_USER) {
             ErrorLoggingUtils.logAndReturnFailure(
                 tag = TAG,
-                exception = exception,
+                throwable = exception,
                 message = "Could not update anonymous data: Invalid user",
                 reason = UpdateAnonymousDataReason.InvalidUser
             )
         } else {
             ErrorLoggingUtils.logAndReturnFailure(
                 tag = TAG,
-                exception = exception,
+                throwable = exception,
                 message = "Could not update anonymous data: Network error, do you have Internet connection?",
                 reason = UpdateAnonymousDataReason.NetworkError
             )

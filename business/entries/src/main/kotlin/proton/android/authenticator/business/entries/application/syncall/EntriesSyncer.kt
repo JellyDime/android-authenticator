@@ -18,6 +18,7 @@
 
 package proton.android.authenticator.business.entries.application.syncall
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -37,6 +38,7 @@ import proton.android.authenticator.commonrust.EntryOperation
 import proton.android.authenticator.commonrust.OperationType
 import proton.android.authenticator.commonrust.SyncOperationCheckerInterface
 import proton.android.authenticator.shared.common.domain.dispatchers.AppDispatchers
+import proton.android.authenticator.shared.common.logs.AuthenticatorLogger
 import proton.android.authenticator.shared.crypto.domain.contexts.EncryptionContextProvider
 import proton.android.authenticator.shared.crypto.domain.keys.EncryptionKey
 import proton.android.authenticator.shared.crypto.domain.tags.EncryptionTag
@@ -53,12 +55,22 @@ internal class EntriesSyncer @Inject constructor(
 
     internal suspend fun sync(
         userId: String,
-        key: SyncKey,
+        keys: List<SyncKey>,
         entries: List<SyncEntry>
-    ) {
-        val encryptionKey = generateEncryptionKey(key)
+    ): Int {
+        val decryptedSyncKeys = decryptSyncKeys(
+            encryptionContextProvider = encryptionContextProvider,
+            keys = keys
+        ) { keyId, error ->
+            AuthenticatorLogger.w(TAG, "Could not decrypt sync key: $keyId")
+            AuthenticatorLogger.w(TAG, error)
+        }
+        if (decryptedSyncKeys.isEmpty()) throw NoValidSyncKeysException()
 
-        val remoteEntriesMap = getRemoteEntriesMap(userId, encryptionKey)
+        val (primaryKey, primaryEncryptionKey) = decryptedSyncKeys.first()
+        val encryptionKeys = decryptedSyncKeys.map { (_, encryptionKey) -> encryptionKey }
+
+        val (remoteEntriesMap, undecryptableCount) = getRemoteEntriesMap(userId, encryptionKeys)
 
         val localEntriesMap = getLocalEntriesMap(entries)
 
@@ -70,27 +82,29 @@ internal class EntriesSyncer @Inject constructor(
 
         executeSyncOperations(
             userId = userId,
-            keyId = key.id,
-            encryptionKey = encryptionKey,
+            keyId = primaryKey.id,
+            encryptionKey = primaryEncryptionKey,
             remoteEntriesMap = remoteEntriesMap,
             localEntriesMap = localEntriesMap
         )
-    }
 
-    private suspend fun generateEncryptionKey(key: SyncKey) = encryptionContextProvider
-        .withEncryptionContext { decrypt(key.encryptedKey) }
-        .let(::EncryptionKey)
+        return undecryptableCount
+    }
 
     private fun getLocalEntriesMap(syncEntries: List<SyncEntry>) = syncEntries
         .map(::EntryLocal)
         .associateBy(EntryLocal::id)
 
-    private suspend fun getRemoteEntriesMap(userId: String, encryptionKey: EncryptionKey) = api
-        .fetchAll(
+    private suspend fun getRemoteEntriesMap(
+        userId: String,
+        encryptionKeys: List<EncryptionKey>
+    ): Pair<Map<String, EntryRemote>, Int> {
+        val result = api.fetchAll(
             userId = userId,
-            encryptionKey = encryptionKey
+            encryptionKeys = encryptionKeys
         )
-        .associateBy(EntryRemote::id)
+        return result.entries.associateBy(EntryRemote::id) to result.undecryptableCount
+    }
 
     private suspend fun executeSyncOperations(
         userId: String,
@@ -399,7 +413,25 @@ internal class EntriesSyncer @Inject constructor(
     private companion object {
 
         private const val BATCH_SIZE = 100
+        private const val TAG = "EntriesSyncer"
 
     }
 
 }
+
+internal suspend fun decryptSyncKeys(
+    encryptionContextProvider: EncryptionContextProvider,
+    keys: List<SyncKey>,
+    onKeyDecryptFailure: (keyId: String, error: Throwable) -> Unit
+): List<Pair<SyncKey, EncryptionKey>> = encryptionContextProvider.withEncryptionContext {
+    keys.mapNotNull { key ->
+        runCatching {
+            key to EncryptionKey(decrypt(key.encryptedKey))
+        }.onFailure { error ->
+            if (error is CancellationException) throw error
+            onKeyDecryptFailure(key.id, error)
+        }.getOrNull()
+    }
+}
+
+internal class NoValidSyncKeysException : IllegalStateException("No valid sync keys found")
