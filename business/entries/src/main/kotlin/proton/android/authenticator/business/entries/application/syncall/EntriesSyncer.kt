@@ -419,7 +419,7 @@ internal class EntriesSyncer @Inject constructor(
 
 }
 
-internal suspend fun decryptSyncKeys(
+private suspend fun decryptSyncKeys(
     encryptionContextProvider: EncryptionContextProvider,
     keys: List<SyncKey>,
     onKeyDecryptFailure: (keyId: String, error: Throwable) -> Unit
