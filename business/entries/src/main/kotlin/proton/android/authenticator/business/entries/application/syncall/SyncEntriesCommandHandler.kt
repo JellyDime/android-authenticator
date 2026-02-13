@@ -47,8 +47,8 @@ internal class SyncEntriesCommandHandler @Inject constructor(
             onFailure = { throwable: Throwable ->
                 when (throwable) {
                     is ApiException -> {
-                        when (ERROR_CODE_UNAUTHORIZED) {
-                            throwable.getErrorCode() ->
+                        when (throwable.getErrorCode()) {
+                            ERROR_CODE_UNAUTHORIZED ->
                                 ErrorLoggingUtils.logAndReturnFailure(
                                     tag = TAG,
                                     throwable = throwable,
