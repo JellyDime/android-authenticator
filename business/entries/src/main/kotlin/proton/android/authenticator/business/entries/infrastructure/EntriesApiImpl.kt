@@ -38,6 +38,7 @@ import proton.android.authenticator.shared.common.domain.dispatchers.AppDispatch
 import proton.android.authenticator.shared.common.logs.AuthenticatorLogger
 import proton.android.authenticator.shared.crypto.domain.keys.EncryptionKey
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -212,7 +213,11 @@ internal class EntriesApiImpl @Inject constructor(
         }
 
     private inline fun <T> List<EncryptionKey>.tryWithAnyKey(block: (EncryptionKey) -> T): T? =
-        firstNotNullOfOrNull { key -> runCatching { block(key) }.getOrNull() }
+        firstNotNullOfOrNull { key ->
+            runCatching { block(key) }
+                .onFailure { e -> if (e is CancellationException) throw e }
+                .getOrNull()
+        }
 
     private companion object {
         private const val TAG = "EntriesApiImpl"
