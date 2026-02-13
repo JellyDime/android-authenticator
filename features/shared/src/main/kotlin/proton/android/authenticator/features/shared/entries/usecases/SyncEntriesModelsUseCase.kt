@@ -87,7 +87,7 @@ class SyncEntriesModelsUseCase @Inject constructor(
             .let { command ->
                 val result: Answer<Int, SyncEntriesReason> = commandBus.dispatch(command = command)
                 if (result is Answer.Success && result.data > 0) {
-                    showUndecryptableEntriesWarning(result.data)
+                    showUndecryptableEntriesWarning()
                 }
                 when (result) {
                     is Answer.Success -> Answer.Success(Unit)
@@ -96,7 +96,7 @@ class SyncEntriesModelsUseCase @Inject constructor(
             }
     }
 
-    private suspend fun showUndecryptableEntriesWarning(count: Int) {
+    private suspend fun showUndecryptableEntriesWarning() {
         val settings = observeSettingsUseCase().first()
 
         if (!settings.isUndecryptableEntriesWarningDismissed) {
