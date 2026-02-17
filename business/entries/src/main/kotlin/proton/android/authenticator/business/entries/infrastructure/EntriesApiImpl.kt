@@ -33,7 +33,7 @@ import proton.android.authenticator.business.entries.infrastructure.network.Upda
 import proton.android.authenticator.business.entries.infrastructure.network.UpdateEntryRequestDto
 import proton.android.authenticator.business.entries.infrastructure.network.retrofit.RetrofitEntriesDataSource
 import proton.android.authenticator.commonrust.AuthenticatorCryptoInterface
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntryModel
 import proton.android.authenticator.shared.common.domain.dispatchers.AppDispatchers
 import proton.android.authenticator.shared.common.logs.AuthenticatorLogger
 import proton.android.authenticator.shared.crypto.domain.keys.EncryptionKey

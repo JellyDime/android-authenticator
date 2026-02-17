@@ -25,7 +25,7 @@ import proton.android.authenticator.business.entries.domain.EntriesRepository
 import proton.android.authenticator.business.entries.domain.Entry
 import proton.android.authenticator.business.entries.domain.EntryImportType
 import proton.android.authenticator.business.shared.domain.infrastructure.files.FileReader
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntryModel
 import proton.android.authenticator.commonrust.AuthenticatorImporterInterface
 import proton.android.authenticator.commonrust.AuthenticatorMobileClientInterface
 import proton.android.authenticator.shared.common.domain.dispatchers.AppDispatchers

@@ -45,7 +45,7 @@ internal class EntriesExporter @Inject constructor(
             encryptionContextProvider.withEncryptionContext {
                 entries.map { entry ->
                     authenticatorClient.deserializeEntry(
-                        serialized = decrypt(entry.content, EncryptionTag.EntryContent)
+                        entry = decrypt(entry.content, EncryptionTag.EntryContent)
                     )
                 }
             }

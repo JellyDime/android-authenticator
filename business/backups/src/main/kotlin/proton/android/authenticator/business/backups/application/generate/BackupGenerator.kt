@@ -33,8 +33,8 @@ import proton.android.authenticator.business.backups.domain.BackupRepository
 import proton.android.authenticator.business.shared.domain.infrastructure.directories.DirectoryReader
 import proton.android.authenticator.business.shared.domain.infrastructure.files.FileDeleter
 import proton.android.authenticator.business.shared.domain.infrastructure.files.FileWriter
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
-import proton.android.authenticator.commonrust.AuthenticatorEntryType
+import proton.android.authenticator.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntryType
 import proton.android.authenticator.commonrust.AuthenticatorMobileClientInterface
 import proton.android.authenticator.shared.common.domain.dispatchers.AppDispatchers
 import proton.android.authenticator.shared.common.domain.models.MimeType

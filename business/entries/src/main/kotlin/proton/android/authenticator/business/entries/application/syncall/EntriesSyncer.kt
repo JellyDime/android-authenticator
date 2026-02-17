@@ -32,7 +32,7 @@ import proton.android.authenticator.business.entries.domain.Entry
 import proton.android.authenticator.business.entries.domain.EntryLocal
 import proton.android.authenticator.business.entries.domain.EntryRemote
 import proton.android.authenticator.business.entries.domain.EntrySort
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntryModel
 import proton.android.authenticator.commonrust.AuthenticatorMobileClientInterface
 import proton.android.authenticator.commonrust.EntryOperation
 import proton.android.authenticator.commonrust.OperationType

@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import proton.android.authenticator.business.entrycodes.domain.EntryCode
-import proton.android.authenticator.commonrust.AuthenticatorCodeResponse
+import proton.android.authenticator.AuthenticatorCodeResponseModel
 import proton.android.authenticator.commonrust.AuthenticatorMobileClientInterface
 import proton.android.authenticator.commonrust.MobileTotpGeneratorCallback
 import proton.android.authenticator.commonrust.MobileTotpGeneratorInterface
@@ -55,7 +55,7 @@ internal class EntryCodesSearcher @Inject constructor(
                     totpGenerator.start(
                         entries = entryModels,
                         callback = object : MobileTotpGeneratorCallback {
-                            override fun onCodes(codes: List<AuthenticatorCodeResponse>) {
+                            override fun onCodes(codes: List<AuthenticatorCodeResponseModel>) {
                                 codes.map { entryCodeResponse ->
                                     EntryCode(
                                         currentCode = entryCodeResponse.currentCode,

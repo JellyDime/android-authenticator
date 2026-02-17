@@ -19,7 +19,7 @@
 package proton.android.authenticator.business.entries.domain
 
 import proton.android.authenticator.business.entries.application.syncall.SyncEntry
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntryModel
 import proton.android.authenticator.commonrust.LocalEntry
 
 internal data class EntryLocal(private val syncEntry: SyncEntry) {

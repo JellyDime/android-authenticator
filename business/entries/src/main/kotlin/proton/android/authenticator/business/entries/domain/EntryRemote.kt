@@ -18,7 +18,7 @@
 
 package proton.android.authenticator.business.entries.domain
 
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntryModel
 import proton.android.authenticator.commonrust.RemoteEntry
 
 internal data class EntryRemote(

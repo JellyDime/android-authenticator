@@ -18,17 +18,17 @@
 
 package proton.android.authenticator.business.entries.domain
 
-import proton.android.authenticator.commonrust.AuthenticatorTotpAlgorithm
+import proton.android.pass.totp.Algorithm
 
 enum class EntryAlgorithm(val value: Int) {
     SHA1(value = 0),
     SHA256(value = 1),
     SHA512(value = 2);
 
-    internal fun asAuthenticatorEntryAlgorithm(): AuthenticatorTotpAlgorithm = when (this) {
-        SHA1 -> AuthenticatorTotpAlgorithm.SHA1
-        SHA256 -> AuthenticatorTotpAlgorithm.SHA256
-        SHA512 -> AuthenticatorTotpAlgorithm.SHA512
+    internal fun asAuthenticatorEntryAlgorithm(): Algorithm = when (this) {
+        SHA1 -> Algorithm.SHA1
+        SHA256 -> Algorithm.SHA256
+        SHA512 -> Algorithm.SHA512
     }
 
     companion object {

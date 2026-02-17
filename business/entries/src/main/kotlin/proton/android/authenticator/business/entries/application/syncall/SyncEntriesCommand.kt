@@ -20,8 +20,8 @@ package proton.android.authenticator.business.entries.application.syncall
 
 import me.proton.core.crypto.common.keystore.EncryptedByteArray
 import proton.android.authenticator.business.entries.domain.EntryType
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
-import proton.android.authenticator.commonrust.AuthenticatorEntryType
+import proton.android.authenticator.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntryType
 import proton.android.authenticator.commonrust.LocalEntryState
 import proton.android.authenticator.shared.common.domain.infrastructure.commands.Command
 

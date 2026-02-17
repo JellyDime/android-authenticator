@@ -50,7 +50,7 @@ class ObserveEntryModelsUseCase @Inject constructor(
                 encryptionContextProvider.withEncryptionContext {
                     entries.map { entry ->
                         authenticatorClient.deserializeEntry(
-                            serialized = decrypt(entry.content, EncryptionTag.EntryContent)
+                            entry = decrypt(entry.content, EncryptionTag.EntryContent)
                         ).let { authenticatorEntryModel ->
                             authenticatorEntryModel to authenticatorClient.getTotpParams(
                                 entry = authenticatorEntryModel

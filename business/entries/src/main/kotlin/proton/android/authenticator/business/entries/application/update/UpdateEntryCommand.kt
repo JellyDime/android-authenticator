@@ -19,9 +19,9 @@
 package proton.android.authenticator.business.entries.application.update
 
 import proton.android.authenticator.business.entries.domain.EntryAlgorithm
-import proton.android.authenticator.commonrust.AuthenticatorEntryModel
-import proton.android.authenticator.commonrust.AuthenticatorEntrySteamCreateParameters
-import proton.android.authenticator.commonrust.AuthenticatorEntryTotpCreateParameters
+import proton.android.authenticator.AuthenticatorEntryModel
+import proton.android.authenticator.AuthenticatorEntrySteamCreateParameters
+import proton.android.authenticator.AuthenticatorEntryTotpCreateParameters
 import proton.android.authenticator.commonrust.AuthenticatorMobileClientInterface
 import proton.android.authenticator.shared.common.domain.infrastructure.commands.Command
 

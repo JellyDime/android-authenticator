@@ -44,7 +44,7 @@ class GetEntryModelUseCase @Inject constructor(
         .let { entry ->
             encryptionContextProvider.withEncryptionContext {
                 authenticatorClient.deserializeEntry(
-                    serialized = decrypt(entry.content, EncryptionTag.EntryContent)
+                    entry = decrypt(entry.content, EncryptionTag.EntryContent)
                 ).let { authenticatorEntryModel ->
                     authenticatorEntryModel to authenticatorClient.getTotpParams(
                         entry = authenticatorEntryModel
