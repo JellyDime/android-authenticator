@@ -19,13 +19,11 @@
 package proton.android.authenticator.features.home.master.presentation
 
 import androidx.compose.runtime.Immutable
-import proton.android.authenticator.business.entrycodes.domain.EntryCode
 import proton.android.authenticator.business.settings.domain.Settings
 import proton.android.authenticator.business.settings.domain.SettingsDigitType
 import proton.android.authenticator.business.settings.domain.SettingsSearchBarType
 import proton.android.authenticator.business.settings.domain.SettingsSortingType
 import proton.android.authenticator.business.settings.domain.SettingsThemeType
-import proton.android.authenticator.features.shared.entries.presentation.EntryModel
 import proton.android.authenticator.shared.ui.domain.models.UiTextMask
 import proton.android.authenticator.shared.ui.domain.theme.ThemeType
 
@@ -103,8 +101,7 @@ internal sealed interface HomeMasterState {
         override val event: HomeMasterEvent,
         override val searchQuery: String,
         internal val isRefreshing: Boolean,
-        private val entries: List<EntryModel>,
-        private val entryCodes: List<EntryCode>,
+        private val entryModelsMap: Map<String, HomeMasterEntryModel>,
         private val entryCodesRemainingTimes: Map<Int, Int>,
         private val settings: Settings
     ) : HomeMasterState {
@@ -138,17 +135,6 @@ internal sealed interface HomeMasterState {
             SettingsDigitType.Plain -> false
         }
 
-        internal val entryModelsMap: Map<String, HomeMasterEntryModel> = run {
-            val sortedEntries = entries.sort(sortingType = settings.sortingType)
-            val uriToCodeMap =
-                entries.zip(entryCodes).associate { (entry, code) -> entry.uri to code }
-            sortedEntries.mapNotNull { entry ->
-                uriToCodeMap[entry.uri]?.let { code ->
-                    HomeMasterEntryModel(entry, code)
-                }
-            }.associateBy { entryModel -> entryModel.id }
-        }
-
         internal val entryModels: List<HomeMasterEntryModel> = entryModelsMap.values.toList()
 
         internal val entryCodeMasks: List<UiTextMask> = buildList {
@@ -163,32 +149,12 @@ internal sealed interface HomeMasterState {
         internal val needsBottomExtraSpace: Boolean =
             settings.searchBarType == SettingsSearchBarType.Top
 
+        internal fun entryModel(id: String): HomeMasterEntryModel? = entryModelsMap[id]
+
         internal fun getRemainingSeconds(totalSeconds: Int): Int = entryCodesRemainingTimes.getOrDefault(
             key = totalSeconds,
             defaultValue = 0
         )
-
-        private fun List<EntryModel>.sort(sortingType: SettingsSortingType) = when (sortingType) {
-            SettingsSortingType.CreatedAsc -> {
-                sortedBy(EntryModel::createdAt)
-            }
-
-            SettingsSortingType.CreatedDesc -> {
-                sortedByDescending(EntryModel::createdAt)
-            }
-
-            SettingsSortingType.Manual -> {
-                sortedWith(compareBy(EntryModel::position).thenByDescending(EntryModel::modifiedAt))
-            }
-
-            SettingsSortingType.IssuerAsc -> {
-                sortedBy { entryModel -> entryModel.issuer.lowercase() }
-            }
-
-            SettingsSortingType.IssuerDesc -> {
-                sortedByDescending { entryModel -> entryModel.issuer.lowercase() }
-            }
-        }
 
     }
 

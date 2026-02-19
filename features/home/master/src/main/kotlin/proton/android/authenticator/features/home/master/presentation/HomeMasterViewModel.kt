@@ -32,11 +32,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
@@ -47,9 +50,13 @@ import proton.android.authenticator.business.applock.domain.AppLockState
 import proton.android.authenticator.business.backups.domain.Backup
 import proton.android.authenticator.business.backups.domain.BackupFrequencyType
 import proton.android.authenticator.business.entries.application.syncall.SyncEntriesReason
+import proton.android.authenticator.business.settings.domain.Settings
 import proton.android.authenticator.business.settings.domain.SettingsAppLockType
+import proton.android.authenticator.business.settings.domain.SettingsSortingType
 import proton.android.authenticator.features.home.master.R
 import proton.android.authenticator.features.home.master.usecases.ObserveEntryCodesUseCase
+import proton.android.authenticator.features.shared.entries.presentation.EntryModel
+import proton.android.authenticator.shared.ui.domain.models.UiDraggableItem
 import proton.android.authenticator.features.home.master.usecases.SortEntriesUseCase
 import proton.android.authenticator.features.shared.entries.usecases.ObserveEntryModelsUseCase
 import proton.android.authenticator.features.shared.entries.usecases.SyncEntriesModelsUseCase
@@ -89,6 +96,13 @@ internal class HomeMasterViewModel @Inject constructor(
     private val eventFlow = MutableStateFlow<HomeMasterEvent>(value = HomeMasterEvent.Idle)
 
     private val isRefreshingFlow = MutableStateFlow(value = false)
+
+    private val settingsFlow = observeSettingsUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
+            initialValue = Settings.Default
+        )
 
     private val backupFlow = observeBackupUseCase()
 
@@ -161,15 +175,33 @@ internal class HomeMasterViewModel @Inject constructor(
         }
     }
 
-    internal val stateFlow: StateFlow<HomeMasterState> = combine(
-        screenModelFlow,
+    private val entryModelsMapFlow = combine(
         entriesFlow,
         entryCodesFlow,
+        settingsFlow
+    ) { entries, entryCodes, settings ->
+        val sortedEntries = entries.sort(sortingType = settings.sortingType)
+        val uriToCodeMap =
+            entries.zip(entryCodes).associate { (entry, code) -> entry.uri to code }
+        sortedEntries.mapNotNull { entry ->
+            uriToCodeMap[entry.uri]?.let { code ->
+                HomeMasterEntryModel(entry, code)
+            }
+        }.associateBy { entryModel -> entryModel.id }
+    }.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
+        replay = 1
+    )
+
+    internal val stateFlow: StateFlow<HomeMasterState> = combine(
+        screenModelFlow,
+        entryModelsMapFlow,
         entryCodesRemainingTimesFlow,
-        observeSettingsUseCase()
-    ) { screenModel, entryModels, entryCodes, entryCodesRemainingTimes, settings ->
+        settingsFlow
+    ) { screenModel, entryModelsMap, entryCodesRemainingTimes, settings ->
         when {
-            screenModel.searchQuery.isEmpty() && entryModels.isEmpty() -> {
+            screenModel.searchQuery.isEmpty() && entryModelsMap.isEmpty() -> {
                 HomeMasterState.Empty(
                     event = screenModel.event,
                     isRefreshing = screenModel.isRefreshing,
@@ -177,7 +209,7 @@ internal class HomeMasterViewModel @Inject constructor(
                 )
             }
 
-            entryModels.isEmpty() -> {
+            entryModelsMap.isEmpty() -> {
                 HomeMasterState.EmptySearch(
                     searchQuery = screenModel.searchQuery,
                     settings = settings
@@ -189,8 +221,7 @@ internal class HomeMasterViewModel @Inject constructor(
                     event = screenModel.event,
                     searchQuery = screenModel.searchQuery,
                     isRefreshing = screenModel.isRefreshing,
-                    entries = entryModels,
-                    entryCodes = entryCodes,
+                    entryModelsMap = entryModelsMap,
                     entryCodesRemainingTimes = entryCodesRemainingTimes,
                     settings = settings
                 )
@@ -202,9 +233,18 @@ internal class HomeMasterViewModel @Inject constructor(
         initialValue = HomeMasterState.Loading
     )
 
+    internal val draggableItemsFlow: StateFlow<List<UiDraggableItem>> = entryModelsMapFlow
+        .map { map -> map.keys.map(::UiDraggableItem) }
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
+            initialValue = emptyList()
+        )
+
     init {
         viewModelScope.launch {
-            observeSettingsUseCase()
+            settingsFlow
                 .flatMapLatest {
                     if (it.appLockType == SettingsAppLockType.Biometric) {
                         observeAppLockStateUseCase()
@@ -263,8 +303,10 @@ internal class HomeMasterViewModel @Inject constructor(
         eventFlow.compareAndSet(expect = event, update = HomeMasterEvent.Idle)
     }
 
-    internal fun onCopyEntryCode(entry: HomeMasterEntryModel, areCodesHidden: Boolean) {
-        copyToClipboardUseCase(text = entry.currentCode, isSensitive = areCodesHidden)
+    internal fun onCopyEntryCode(entryId: String) {
+        val readyState = stateFlow.value as? HomeMasterState.Ready ?: return
+        val entry = readyState.entryModel(entryId) ?: return
+        copyToClipboardUseCase(text = entry.currentCode, isSensitive = readyState.areCodesHidden)
             .let { isSupported ->
                 SnackbarEvent(messageResId = R.string.home_snackbar_message_entry_copied)
                     .takeIf { !isSupported }
@@ -276,10 +318,11 @@ internal class HomeMasterViewModel @Inject constructor(
             }
     }
 
-    internal fun onEntriesSorted(newSortingMap: Map<String, Int>, homeEntryModels: List<HomeMasterEntryModel>) {
+    internal fun onEntriesSorted(newSortingMap: Map<String, Int>) {
+        val readyState = stateFlow.value as? HomeMasterState.Ready ?: return
         viewModelScope.launch {
             sortEntriesUseCase(
-                entryModels = homeEntryModels.map(HomeMasterEntryModel::entryModel),
+                entryModels = readyState.entryModels.map(HomeMasterEntryModel::entryModel),
                 newSortingMap = newSortingMap
             ).fold(
                 onFailure = {
@@ -354,6 +397,19 @@ internal class HomeMasterViewModel @Inject constructor(
 
     internal fun onUpdateEntrySearchQuery(newSearchQuery: String) {
         entrySearchQueryState.value = newSearchQuery.trimStart()
+    }
+
+    private fun List<EntryModel>.sort(sortingType: SettingsSortingType) = when (sortingType) {
+        SettingsSortingType.CreatedAsc -> sortedBy(EntryModel::createdAt)
+        SettingsSortingType.CreatedDesc -> sortedByDescending(EntryModel::createdAt)
+        SettingsSortingType.Manual -> sortedWith(
+            compareBy(EntryModel::position).thenByDescending(
+                EntryModel::modifiedAt
+            )
+        )
+
+        SettingsSortingType.IssuerAsc -> sortedBy { it.issuer.lowercase() }
+        SettingsSortingType.IssuerDesc -> sortedByDescending { it.issuer.lowercase() }
     }
 
     private companion object {

@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import proton.android.authenticator.features.home.master.presentation.HomeMasterEntryModel
 import proton.android.authenticator.features.home.master.presentation.HomeMasterState
 import proton.android.authenticator.shared.ui.domain.components.lists.DraggableVerticalList
 import proton.android.authenticator.shared.ui.domain.components.refresh.PullToRefresh
@@ -33,19 +32,31 @@ import proton.android.authenticator.shared.ui.domain.theme.ThemeSpacing
 @Composable
 internal fun HomeEntries(
     state: HomeMasterState.Ready,
+    draggableItems: List<UiDraggableItem>,
     listState: LazyListState,
-    onCopyEntryCodeClick: (HomeMasterEntryModel, Boolean) -> Unit,
-    onEditEntryClick: (HomeMasterEntryModel) -> Unit,
-    onDeleteEntryClick: (HomeMasterEntryModel) -> Unit,
-    onEntriesSorted: (Map<String, Int>, List<HomeMasterEntryModel>) -> Unit,
+    onCopyEntryCodeClick: (String) -> Unit,
+    onEditEntryClick: (String) -> Unit,
+    onDeleteEntryClick: (String) -> Unit,
+    onEntriesSorted: (Map<String, Int>) -> Unit,
     onEntriesRefreshPull: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     with(state) {
-        entryModels.map { entryModel ->
-            UiDraggableItem(
-                id = entryModel.id,
-                content = {
+        PullToRefresh(
+            modifier = modifier,
+            isRefreshing = isRefreshing,
+            onRefresh = { onEntriesRefreshPull(isSyncEnabled) }
+        ) {
+            DraggableVerticalList(
+                modifier = Modifier.fillMaxSize(),
+                draggableItems = draggableItems,
+                isDragEnabled = canSortItems,
+                listState = listState,
+                verticalArrangement = Arrangement.spacedBy(space = ThemeSpacing.Small),
+                onSorted = onEntriesSorted,
+                needsBottomExtraSpace = state.needsBottomExtraSpace
+            ) { item ->
+                entryModel(item.id)?.let { entryModel ->
                     HomeEntry(
                         animateOnCodeChange = animateOnCodeChange,
                         searchQuery = searchQuery,
@@ -54,27 +65,11 @@ internal fun HomeEntries(
                         entryModel = entryModel,
                         entryCodeMasks = entryCodeMasks,
                         remainingSeconds = getRemainingSeconds(entryModel.totalSeconds),
-                        onCopyCodeClick = { onCopyEntryCodeClick(entryModel, areCodesHidden) },
-                        onEditClick = { onEditEntryClick(entryModel) },
-                        onDeleteClick = { onDeleteEntryClick(entryModel) }
+                        onCopyCodeClick = { onCopyEntryCodeClick(entryModel.id) },
+                        onEditClick = { onEditEntryClick(entryModel.id) },
+                        onDeleteClick = { onDeleteEntryClick(entryModel.id) }
                     )
                 }
-            )
-        }.also { items ->
-            PullToRefresh(
-                modifier = modifier,
-                isRefreshing = isRefreshing,
-                onRefresh = { onEntriesRefreshPull(isSyncEnabled) }
-            ) {
-                DraggableVerticalList(
-                    modifier = Modifier.fillMaxSize(),
-                    draggableItems = items,
-                    isDragEnabled = canSortItems,
-                    listState = listState,
-                    verticalArrangement = Arrangement.spacedBy(space = ThemeSpacing.Small),
-                    onSorted = { sortingMap -> onEntriesSorted(sortingMap, entryModels) },
-                    needsBottomExtraSpace = state.needsBottomExtraSpace
-                )
             }
         }
     }

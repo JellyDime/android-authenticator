@@ -18,9 +18,7 @@
 
 package proton.android.authenticator.shared.ui.domain.models
 
-import androidx.compose.runtime.Composable
-
-data class UiDraggableItem(
-    internal val id: String,
-    internal val content: @Composable () -> Unit
+@JvmInline
+value class UiDraggableItem(
+    val id: String
 )
