@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="warning_undecryptable_entries">Einige Einträge konnten nicht entschlüsselt werden</string>
+  <string name="action_dismiss">Verwerfen</string>
+</resources>

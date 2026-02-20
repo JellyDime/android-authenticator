@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="warning_undecryptable_entries">Certaines entrées n\'ont pas pu être déchiffrées</string>
+  <string name="action_dismiss">Ignorer</string>
+</resources>

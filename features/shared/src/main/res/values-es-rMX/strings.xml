@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="warning_undecryptable_entries">No se han podido descifrar algunas entradas</string>
+  <string name="action_dismiss">Descartar</string>
+</resources>
