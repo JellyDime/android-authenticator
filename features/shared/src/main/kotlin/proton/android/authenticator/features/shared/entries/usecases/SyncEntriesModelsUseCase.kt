@@ -43,12 +43,12 @@ class SyncEntriesModelsUseCase @Inject constructor(
     private val updateSettingsUseCase: UpdateSettingsUseCase
 ) {
 
-    suspend operator fun invoke(): Answer<Unit, SyncEntriesReason> {
+    suspend operator fun invoke(forceRefresh: Boolean): Answer<Unit, SyncEntriesReason> {
         val user = observeUserUseCase().first() ?: run {
             return Answer.Failure(reason = SyncEntriesReason.UserNotFound)
         }
 
-        val keys = getAllKeysUseCase()
+        val keys = getAllKeysUseCase(forceRefresh = forceRefresh)
             .ifEmpty { getAllKeysUseCase(forceRefresh = true) }
         if (keys.isEmpty()) {
             return Answer.Failure(reason = SyncEntriesReason.KeyNotFound)

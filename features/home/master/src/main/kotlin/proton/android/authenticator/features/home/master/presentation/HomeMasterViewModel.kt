@@ -360,7 +360,7 @@ internal class HomeMasterViewModel @Inject constructor(
                     .also { return@launch }
             }
 
-            syncEntriesModelsUseCase().fold(
+            syncEntriesModelsUseCase(forceRefresh = true).fold(
                 onFailure = { reason ->
                     AuthenticatorLogger.w(tag = TAG, message = "Entries sync failed: $reason")
 

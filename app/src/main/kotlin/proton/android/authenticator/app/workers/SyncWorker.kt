@@ -34,7 +34,7 @@ internal class SyncWorker @AssistedInject constructor(
     private val syncEntriesUseCase: SyncEntriesModelsUseCase
 ) : CoroutineWorker(context, workerParameters) {
 
-    override suspend fun doWork(): Result = syncEntriesUseCase().fold(
+    override suspend fun doWork(): Result = syncEntriesUseCase(forceRefresh = false).fold(
         onFailure = { reason ->
             AuthenticatorLogger.w(tag = TAG, message = "Entries sync failed: $reason")
 

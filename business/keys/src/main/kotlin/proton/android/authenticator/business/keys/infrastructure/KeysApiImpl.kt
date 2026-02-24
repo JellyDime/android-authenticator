@@ -76,7 +76,7 @@ internal class KeysApiImpl @Inject constructor(
 
         AuthenticatorLogger.i(TAG, "Fetched ${keyDtos.size} key DTOs from server")
 
-        val user = userRepository.getUser(sessionUserId = sessionUserId)
+        val user = userRepository.getUser(sessionUserId = sessionUserId, true)
 
         return encryptionContextProvider.withEncryptionContext {
             val keys = keyDtos.mapNotNull { keyDto ->
