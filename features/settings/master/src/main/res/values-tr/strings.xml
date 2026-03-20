@@ -20,8 +20,8 @@
   <string name="settings_screen_title">Ayarlar</string>
   <string name="settings_pass_banner_description">Kimlik hırsızlığını ve veri sızıntılarını önlemek için güçlü ve benzersiz parolalar kullanın.</string>
   <string name="settings_security_section">Güvenlik</string>
-  <string name="settings_security_title_backups">Yedekler</string>
-  <string name="settings_security_title_sync">Aygıtlar arasında eşitleme</string>
+  <string name="settings_security_title_backups">Yedekleme</string>
+  <string name="settings_security_title_sync">Aygıtlar arasında eşitlensin</string>
   <string name="settings_security_description_sync" comment="The placeholder will be replaced with either username or email. (e.g. Account: user@email.com)">Hesap: %1$s</string>
   <string name="settings_security_title_lock">Uygulama kilidi</string>
   <string name="settings_security_title_lock_option_biometric">Biyometrik</string>
@@ -37,11 +37,11 @@
   <string name="settings_appearance_title_theme_option_light">Açık</string>
   <string name="settings_appearance_title_theme_option_system">Sistem</string>
   <string name="settings_appearance_title_search_bar_position">Arama çubuğu konumu</string>
-  <string name="settings_appearance_title_search_bar_position_option_bottom">Alt</string>
-  <string name="settings_appearance_title_search_bar_position_option_top">Üst</string>
+  <string name="settings_appearance_title_search_bar_position_option_bottom">Altta</string>
+  <string name="settings_appearance_title_search_bar_position_option_top">Üstte</string>
   <string name="settings_appearance_title_digit_style">Rakam biçimi</string>
   <string name="settings_appearance_title_digit_style_option_plain">Düz</string>
-  <string name="settings_appearance_title_digit_style_option_boxes">Kutular</string>
+  <string name="settings_appearance_title_digit_style_option_boxes">Kutulu</string>
   <string name="settings_appearance_title_sorting">Sıralama</string>
   <string name="settings_appearance_title_sorting_option_created_asc">Eskiden yeniye</string>
   <string name="settings_appearance_title_sorting_option_created_desc">Yeniden eskiye</string>

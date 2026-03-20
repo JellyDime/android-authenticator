@@ -17,8 +17,8 @@
   ~ along with Proton Authenticator.  If not, see <https://www.gnu.org/licenses/>.
   -->
 <resources>
-  <string name="notification_automatic_backups_title">Otomatik yedeklemeler durduruldu</string>
-  <string name="notification_automatic_backups_message">Belirtilen yedekleme klasörü bulunamadı. Otomatik yedeklemeleri yeniden başlatmak için ayarlarınızı denetleyin.</string>
+  <string name="notification_automatic_backups_title">Otomatik yedekleme durduruldu</string>
+  <string name="notification_automatic_backups_message">Belirtilen yedekleme klasörü bulunamadı. Otomatik yedeklemeyi yeniden başlatmak için ayarlarınızı denetleyin.</string>
   <string name="notification_automatic_backups_success_title">Yedekleme tamamlandı</string>
-  <string name="notification_automatic_backups_success_message">Yedekleme %s konumuna kaydedildi</string>
+  <string name="notification_automatic_backups_success_message">Yedek %s konumuna kaydedildi</string>
 </resources>

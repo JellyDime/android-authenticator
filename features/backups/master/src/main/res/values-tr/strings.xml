@@ -17,10 +17,10 @@
   ~ along with Proton Authenticator.  If not, see <https://www.gnu.org/licenses/>.
   -->
 <resources>
-  <string name="backups_screen_title">Yedekler</string>
-  <string name="backups_automatic_backups_title">Otomatik yedeklemeler</string>
+  <string name="backups_screen_title">Yedekleme</string>
+  <string name="backups_automatic_backups_title">Otomatik yedekleme</string>
   <string name="backups_notifications_permission_dialog_title">Yedekleme bildirimleri</string>
-  <string name="backups_notifications_permission_dialog_explanation">Uygulama verilerinizin yedeklendiğini bildirmek için bildirim iznine gerek duyuyor.</string>
+  <string name="backups_notifications_permission_dialog_explanation">Verilerinizin yedeklendiğinin bildirilmesi için bildirim izni verilmesi isteniyor.</string>
   <string name="backups_notifications_permission_dialog_allow">İzin ver</string>
   <string name="backups_notifications_permission_dialog_deny">Atla (önerilmez)</string>
   <string name="backups_automatic_backups_location_title">Klasör konumu</string>
@@ -29,10 +29,10 @@
   <string name="backups_frequency_option_weekly">Haftalık</string>
   <string name="backups_frequency_option_monthly">Aylık</string>
   <string name="backups_backup_now_button">Şimdi yedekle</string>
-  <string name="backups_last_backup_description" comment="Placeholder will be replaced with the date of the last backup (e.g. Last backup: Today, 11:42)">Son yedekleme: %1$s</string>
+  <string name="backups_last_backup_description" comment="Placeholder will be replaced with the date of the last backup (e.g. Last backup: Today, 11:42)">Son yedek: %1$s</string>
   <plurals name="backups_backup_count_description">
-    <item quantity="one">Yalnızca son yedekleme tutulur.</item>
-    <item quantity="other">Yalnızca son %1$d yedekleme tutulur.</item>
+    <item quantity="one">Yalnızca son yedek tutulur.</item>
+    <item quantity="other">Yalnızca son %1$d yedek tutulur.</item>
   </plurals>
   <string name="backups_snackbar_message_backup_success">Yedek oluşturuldu</string>
   <string name="backups_snackbar_message_update_error">Yedekleme yapılandırması güncellenirken bir sorun çıktı</string>

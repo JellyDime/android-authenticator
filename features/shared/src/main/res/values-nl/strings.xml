@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="warning_undecryptable_entries">Some entries couldn\'t be decrypted</string>
-  <string name="action_dismiss">Dismiss</string>
+  <string name="warning_undecryptable_entries">Sommige items konden niet worden ontsleutelt</string>
+  <string name="action_dismiss">Negeren</string>
 </resources>
