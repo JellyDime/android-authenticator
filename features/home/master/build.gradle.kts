@@ -4,6 +4,10 @@ plugins {
 
 android {
     namespace = "proton.android.authenticator.features.home.master"
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 androidComponents {
@@ -19,4 +23,8 @@ dependencies {
 
     implementation(projects.business.backups)
     implementation(projects.business.appLock)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 }

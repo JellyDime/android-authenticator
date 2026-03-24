@@ -22,6 +22,8 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 kotlinVersion = "2.0.21"
 kotlinxCollectionsVersion = "0.3.7"
+kotlinxCoroutinesVersion = "1.8.1"
+mockkVersion = "1.13.13"
 kotlinxSerializationVersion = "1.7.3"
 kotlixDatetimeVersion = "0.6.2"
 kspVersion = "2.0.21-1.0.27"
@@ -132,6 +134,8 @@ hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hil
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltVersion" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jnaVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesVersion" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
 kotlinx-collections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsVersion" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlixDatetimeVersion" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationVersion" }
