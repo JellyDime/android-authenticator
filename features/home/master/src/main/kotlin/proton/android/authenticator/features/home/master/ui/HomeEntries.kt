@@ -26,13 +26,11 @@ import androidx.compose.ui.Modifier
 import proton.android.authenticator.features.home.master.presentation.HomeMasterState
 import proton.android.authenticator.shared.ui.domain.components.lists.DraggableVerticalList
 import proton.android.authenticator.shared.ui.domain.components.refresh.PullToRefresh
-import proton.android.authenticator.shared.ui.domain.models.UiDraggableItem
 import proton.android.authenticator.shared.ui.domain.theme.ThemeSpacing
 
 @Composable
 internal fun HomeEntries(
     state: HomeMasterState.Ready,
-    draggableItems: List<UiDraggableItem>,
     listState: LazyListState,
     onCopyEntryCodeClick: (String) -> Unit,
     onEditEntryClick: (String) -> Unit,

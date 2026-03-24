@@ -24,6 +24,7 @@ import proton.android.authenticator.business.settings.domain.SettingsDigitType
 import proton.android.authenticator.business.settings.domain.SettingsSearchBarType
 import proton.android.authenticator.business.settings.domain.SettingsSortingType
 import proton.android.authenticator.business.settings.domain.SettingsThemeType
+import proton.android.authenticator.shared.ui.domain.models.UiDraggableItem
 import proton.android.authenticator.shared.ui.domain.models.UiTextMask
 import proton.android.authenticator.shared.ui.domain.theme.ThemeType
 
@@ -136,6 +137,8 @@ internal sealed interface HomeMasterState {
         }
 
         internal val entryModels: List<HomeMasterEntryModel> = entryModelsMap.values.toList()
+
+        internal val draggableItems: List<UiDraggableItem> = entryModelsMap.keys.map(::UiDraggableItem)
 
         internal val entryCodeMasks: List<UiTextMask> = buildList {
             if (areCodesHidden) {

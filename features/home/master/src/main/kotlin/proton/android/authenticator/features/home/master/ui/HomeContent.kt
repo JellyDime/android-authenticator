@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import proton.android.authenticator.features.home.master.presentation.HomeMasterState
-import proton.android.authenticator.shared.ui.domain.models.UiDraggableItem
 import proton.android.authenticator.shared.ui.domain.modifiers.applyIf
 import proton.android.authenticator.shared.ui.domain.theme.ThemePadding
 
@@ -33,7 +32,6 @@ import proton.android.authenticator.shared.ui.domain.theme.ThemePadding
 internal fun HomeContent(
     modifier: Modifier = Modifier,
     state: HomeMasterState,
-    draggableItems: List<UiDraggableItem>,
     listState: LazyListState,
     onNewEntryClick: () -> Unit,
     onImportEntriesClick: () -> Unit,
@@ -78,7 +76,6 @@ internal fun HomeContent(
             HomeEntries(
                 modifier = modifier.padding(horizontal = ThemePadding.Medium),
                 state = state,
-                draggableItems = draggableItems,
                 listState = listState,
                 onCopyEntryCodeClick = onCopyEntryCodeClick,
                 onEditEntryClick = onEditEntryClick,

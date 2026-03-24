@@ -32,14 +32,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
@@ -56,7 +53,6 @@ import proton.android.authenticator.business.settings.domain.SettingsSortingType
 import proton.android.authenticator.features.home.master.R
 import proton.android.authenticator.features.home.master.usecases.ObserveEntryCodesUseCase
 import proton.android.authenticator.features.shared.entries.presentation.EntryModel
-import proton.android.authenticator.shared.ui.domain.models.UiDraggableItem
 import proton.android.authenticator.features.home.master.usecases.SortEntriesUseCase
 import proton.android.authenticator.features.shared.entries.usecases.ObserveEntryModelsUseCase
 import proton.android.authenticator.features.shared.entries.usecases.SyncEntriesModelsUseCase
@@ -150,13 +146,6 @@ internal class HomeMasterViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed()
     )
 
-    private val entryCodesFlow = entriesFlow
-        .flatMapLatest(observeEntryCodesUseCase::invoke)
-        .shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed()
-        )
-
     private val entryCodesRemainingTimeTickerFlow = flow {
         while (coroutineContext.isActive) {
             emit(Unit)
@@ -167,32 +156,33 @@ internal class HomeMasterViewModel @Inject constructor(
 
     private val entryCodesRemainingTimesFlow = combine(
         entriesFlow,
-        entryCodesFlow,
         entryCodesRemainingTimeTickerFlow
-    ) { entries, _, _ ->
+    ) { entries, _ ->
         entries.associate { entry ->
             entry.period to timeProvider.remainingPeriodSeconds(entry.period)
         }
     }
 
-    private val entryModelsMapFlow = combine(
-        entriesFlow,
-        entryCodesFlow,
-        settingsFlow
-    ) { entries, entryCodes, settings ->
-        val sortedEntries = entries.sort(sortingType = settings.sortingType)
-        val uriToCodeMap =
-            entries.zip(entryCodes).associate { (entry, code) -> entry.uri to code }
-        sortedEntries.mapNotNull { entry ->
-            uriToCodeMap[entry.uri]?.let { code ->
-                HomeMasterEntryModel(entry, code)
+    private val entryModelsMapFlow = entriesFlow
+        .flatMapLatest { entries ->
+            combine(
+                observeEntryCodesUseCase(entries),
+                settingsFlow
+            ) { entryCodes, settings ->
+                val sortedEntries = entries.sort(sortingType = settings.sortingType)
+                val uriToCodeMap =
+                    entries.zip(entryCodes).associate { (entry, code) -> entry.uri to code }
+                sortedEntries.mapNotNull { entry ->
+                    uriToCodeMap[entry.uri]?.let { code ->
+                        HomeMasterEntryModel(entry, code)
+                    }
+                }.associateBy { entryModel -> entryModel.id }
             }
-        }.associateBy { entryModel -> entryModel.id }
-    }.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
-        replay = 1
-    )
+        }.shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
+            replay = 1
+        )
 
     internal val stateFlow: StateFlow<HomeMasterState> = combine(
         screenModelFlow,
@@ -232,15 +222,6 @@ internal class HomeMasterViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
         initialValue = HomeMasterState.Loading
     )
-
-    internal val draggableItemsFlow: StateFlow<List<UiDraggableItem>> = entryModelsMapFlow
-        .map { map -> map.keys.map(::UiDraggableItem) }
-        .distinctUntilChanged()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
-            initialValue = emptyList()
-        )
 
     init {
         viewModelScope.launch {

@@ -60,7 +60,6 @@ fun HomeScreen(
     onEntriesSorted: () -> Unit
 ) = with(hiltViewModel<HomeMasterViewModel>()) {
     val state by stateFlow.collectAsStateWithLifecycle()
-    val draggableItems by draggableItemsFlow.collectAsStateWithLifecycle()
     val syncDialogState by syncDialogState.collectAsStateWithLifecycle()
 
     val lazyListState = rememberLazyListState()
@@ -132,7 +131,6 @@ fun HomeScreen(
         HomeContent(
             modifier = Modifier.padding(paddingValues = paddingValues),
             state = state,
-            draggableItems = draggableItems,
             listState = lazyListState,
             onNewEntryClick = onNewEntryClick,
             onImportEntriesClick = onImportEntriesClick,
