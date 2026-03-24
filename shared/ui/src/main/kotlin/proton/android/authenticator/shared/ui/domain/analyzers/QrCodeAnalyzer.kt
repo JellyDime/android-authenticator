@@ -76,16 +76,19 @@ class QrCodeAnalyzer(private val onQrCodeScanned: (String, ByteArray) -> Unit) :
         return stream.toByteArray()
     }
 
-    private fun calculateQrScanSource(imageProxy: ImageProxy): LuminanceSource = PlanarYUVLuminanceSource(
-        imageProxy.planes.first().buffer.toByteArray(),
-        imageProxy.width,
-        imageProxy.height,
-        0,
-        0,
-        imageProxy.width,
-        imageProxy.height,
-        false
-    )
+    private fun calculateQrScanSource(imageProxy: ImageProxy): LuminanceSource {
+        val yPlane = imageProxy.planes.first()
+        return PlanarYUVLuminanceSource(
+            yPlane.buffer.toByteArray(),
+            yPlane.rowStride,
+            imageProxy.height,
+            0,
+            0,
+            imageProxy.width,
+            imageProxy.height,
+            false
+        )
+    }
 
     private fun ByteBuffer.toByteArray(): ByteArray {
         rewind()
