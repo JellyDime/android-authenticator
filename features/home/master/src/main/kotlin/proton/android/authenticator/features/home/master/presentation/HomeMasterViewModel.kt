@@ -143,7 +143,8 @@ internal class HomeMasterViewModel @Inject constructor(
         }
     }.shareIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed()
+        started = SharingStarted.WhileSubscribed(),
+        replay = 1
     )
 
     private val entryCodesRemainingTimeTickerFlow = flow {
@@ -179,11 +180,6 @@ internal class HomeMasterViewModel @Inject constructor(
                 }.associateBy { entryModel -> entryModel.id }
             }
         }
-        .shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
-            replay = 1
-        )
 
     internal val stateFlow: StateFlow<HomeMasterState> = combine(
         screenModelFlow,
