@@ -34,4 +34,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
 
     ksp(libs.hilt.compiler)
+
+    testImplementation(libs.junit)
 }

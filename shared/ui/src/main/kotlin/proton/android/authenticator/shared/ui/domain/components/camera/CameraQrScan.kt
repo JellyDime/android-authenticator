@@ -19,7 +19,9 @@
 package proton.android.authenticator.shared.ui.domain.components.camera
 
 import android.view.ViewGroup
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -40,7 +42,13 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.delay
 import proton.android.authenticator.shared.ui.domain.analyzers.QrCodeAnalyzer
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+
+private const val FOCUS_AUTO_CANCEL_SECONDS = 3L
+private const val FOCUS_RETRY_DELAY_MILLIS = 1500L
 
 @Composable
 fun CameraQrScan(
@@ -59,10 +67,22 @@ fun CameraQrScan(
         mutableStateOf<ProcessCameraProvider?>(null)
     }
 
+    var camera by remember {
+        mutableStateOf<Camera?>(null)
+    }
+
+    var previewView by remember {
+        mutableStateOf<PreviewView?>(null)
+    }
+
     val cameraSelector = remember {
         CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
             .build()
+    }
+
+    val mainExecutor = remember(context) {
+        ContextCompat.getMainExecutor(context)
     }
 
     LaunchedEffect(Unit) {
@@ -74,7 +94,7 @@ fun CameraQrScan(
                 }.onFailure { _: Throwable ->
                     onCameraError()
                 }
-            }, ContextCompat.getMainExecutor(context))
+            }, mainExecutor)
         }.onFailure { _: Throwable ->
             onCameraError()
         }
@@ -99,6 +119,10 @@ fun CameraQrScan(
         mutableStateOf(true)
     }
 
+    val qrAnalysisExecutor = remember {
+        Executors.newSingleThreadExecutor()
+    }
+
     DisposableEffect(key1 = lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -117,6 +141,10 @@ fun CameraQrScan(
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
 
+            imageAnalysis.clearAnalyzer()
+            qrAnalysisExecutor.shutdown()
+            camera = null
+            previewView = null
             cameraProvider?.unbindAll()
         }
     }
@@ -126,7 +154,7 @@ fun CameraQrScan(
 
         runCatching {
             provider.unbindAll()
-            provider.bindToLifecycle(
+            camera = provider.bindToLifecycle(
                 lifecycleOwner,
                 cameraSelector,
                 preview,
@@ -141,6 +169,7 @@ fun CameraQrScan(
         modifier = modifier,
         factory = { factoryContext ->
             PreviewView(factoryContext).apply {
+                previewView = this
                 scaleType = PreviewView.ScaleType.FILL_CENTER
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -157,7 +186,8 @@ fun CameraQrScan(
 
                 preview.surfaceProvider = surfaceProvider
             }
-        }
+        },
+        update = { }
     )
 
     CameraQrScanMask(cutoutRect = cutoutRect)
@@ -165,7 +195,7 @@ fun CameraQrScan(
     LaunchedEffect(key1 = previewViewSize) {
         if (previewViewSize == Size.Zero) return@LaunchedEffect
 
-        val cutoutSize = previewViewSize.minDimension * 0.7f
+        val cutoutSize = previewViewSize.minDimension * QrCodeAnalyzer.SCAN_WINDOW_SIZE_RATIO
         val left = previewViewSize.width.minus(cutoutSize).div(2)
         val top = previewViewSize.height.minus(cutoutSize).div(3)
         cutoutRect = Rect(
@@ -176,16 +206,61 @@ fun CameraQrScan(
         )
 
         imageAnalysis.setAnalyzer(
-            ContextCompat.getMainExecutor(context),
+            qrAnalysisExecutor,
             QrCodeAnalyzer(
+                previewWidthProvider = { previewViewSize.width },
+                previewHeightProvider = { previewViewSize.height },
+                cutoutRectProvider = {
+                    android.graphics.Rect(
+                        cutoutRect.left.toInt(),
+                        cutoutRect.top.toInt(),
+                        cutoutRect.right.toInt(),
+                        cutoutRect.bottom.toInt()
+                    )
+                },
                 onQrCodeScanned = { qrCodeValue, qrCodeBytes ->
-                    if (canScanCode) {
-                        canScanCode = false
+                    mainExecutor.execute {
+                        if (canScanCode) {
+                            canScanCode = false
 
-                        onQrCodeScanned(qrCodeValue, qrCodeBytes)
+                            onQrCodeScanned(qrCodeValue, qrCodeBytes)
+                        }
                     }
                 }
             )
         )
     }
+
+    LaunchedEffect(camera, previewView, cutoutRect, canScanCode) {
+        val currentCamera = camera ?: return@LaunchedEffect
+        val currentPreviewView = previewView ?: return@LaunchedEffect
+        val focusPoint = calculateFocusPoint(cutoutRect) ?: return@LaunchedEffect
+
+        while (canScanCode) {
+            runCatching {
+                val meteringPoint = currentPreviewView.meteringPointFactory.createPoint(focusPoint.x, focusPoint.y)
+                val focusAction = FocusMeteringAction.Builder(
+                    meteringPoint,
+                    FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE
+                ).setAutoCancelDuration(FOCUS_AUTO_CANCEL_SECONDS, TimeUnit.SECONDS).build()
+                currentCamera.cameraControl.startFocusAndMetering(focusAction)
+            }
+
+            delay(FOCUS_RETRY_DELAY_MILLIS)
+        }
+    }
 }
+
+internal fun calculateFocusPoint(cutoutRect: Rect): FocusPoint? {
+    if (cutoutRect == Rect.Zero) return null
+
+    return FocusPoint(
+        x = cutoutRect.center.x,
+        y = cutoutRect.center.y
+    )
+}
+
+internal data class FocusPoint(
+    val x: Float,
+    val y: Float
+)
