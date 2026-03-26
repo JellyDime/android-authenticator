@@ -23,4 +23,5 @@ message SettingsPreferences {
   google.protobuf.Timestamp installation_time = 10;
   SettingsPreferencesSortingType sorting_type = 11;
   bool is_undecryptable_entries_warning_dismissed = 12;
+  bool has_undecryptable_entries = 13;
 }

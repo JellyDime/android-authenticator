@@ -29,6 +29,7 @@ data class Settings(
     val isCodeChangeAnimationEnabled: Boolean,
     val isPassBannerDismissed: Boolean,
     val isUndecryptableEntriesWarningDismissed: Boolean,
+    val hasUndecryptableEntries: Boolean,
     val isFirstRun: Boolean,
     val installationTime: Long?
 ) {
@@ -46,6 +47,7 @@ data class Settings(
             isCodeChangeAnimationEnabled = false,
             isPassBannerDismissed = false,
             isUndecryptableEntriesWarningDismissed = false,
+            hasUndecryptableEntries = false,
             isFirstRun = true,
             installationTime = null
         )

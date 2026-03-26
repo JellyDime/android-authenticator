@@ -55,6 +55,7 @@ internal class DataStoreSettingPreferencesDataSource @Inject constructor(
                 isCodeChangeAnimationEnabled = settingsPreferences.isCodeChangeAnimationEnabled,
                 isPassBannerDismissed = settingsPreferences.isPassBannerDismissed,
                 isUndecryptableEntriesWarningDismissed = settingsPreferences.isUndecryptableEntriesWarningDismissed,
+                hasUndecryptableEntries = settingsPreferences.hasUndecryptableEntries,
                 isFirstRun = settingsPreferences.isFirstRun,
                 installationTime = settingsPreferences.installationTime.toEpochMillis()
             )
@@ -73,6 +74,7 @@ internal class DataStoreSettingPreferencesDataSource @Inject constructor(
                 .setIsCodeChangeAnimationEnabled(settings.isCodeChangeAnimationEnabled)
                 .setIsPassBannerDismissed(settings.isPassBannerDismissed)
                 .setIsUndecryptableEntriesWarningDismissed(settings.isUndecryptableEntriesWarningDismissed)
+                .setHasUndecryptableEntries(settings.hasUndecryptableEntries)
                 .setIsFirstRun(settings.isFirstRun)
                 .setInstallationTime(settings.installationTime?.toProtobufTimestamp())
                 .build()

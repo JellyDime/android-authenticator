@@ -65,7 +65,7 @@ internal class AllKeysFinder @Inject constructor(
             if (!forceRefresh && latestLocalKeys.isNotEmpty() && !shouldRefreshByStaleness()) return
 
             val now = System.currentTimeMillis()
-            if (shouldSkipRefreshDueToFailures(now)) return
+            if (!forceRefresh && shouldSkipRefreshDueToFailures(now)) return
 
             lastRefreshAttemptAtMs = now
             runCatching {

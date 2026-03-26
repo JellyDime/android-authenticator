@@ -32,10 +32,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -52,6 +54,7 @@ import proton.android.authenticator.business.settings.domain.SettingsAppLockType
 import proton.android.authenticator.business.settings.domain.SettingsSortingType
 import proton.android.authenticator.features.home.master.R
 import proton.android.authenticator.features.home.master.usecases.ObserveEntryCodesUseCase
+import proton.android.authenticator.features.shared.R as sharedR
 import proton.android.authenticator.features.shared.entries.presentation.EntryModel
 import proton.android.authenticator.features.home.master.usecases.SortEntriesUseCase
 import proton.android.authenticator.features.shared.entries.usecases.ObserveEntryModelsUseCase
@@ -61,6 +64,7 @@ import proton.android.authenticator.features.shared.usecases.backups.ObserveBack
 import proton.android.authenticator.features.shared.usecases.backups.UpdateBackupUseCase
 import proton.android.authenticator.features.shared.usecases.clipboards.CopyToClipboardUseCase
 import proton.android.authenticator.features.shared.usecases.settings.ObserveSettingsUseCase
+import proton.android.authenticator.features.shared.usecases.settings.UpdateSettingsUseCase
 import proton.android.authenticator.features.shared.usecases.snackbars.DispatchSnackbarEventUseCase
 import proton.android.authenticator.shared.common.domain.models.SnackbarEvent
 import proton.android.authenticator.shared.common.domain.providers.TimeProvider
@@ -82,6 +86,7 @@ internal class HomeMasterViewModel @Inject constructor(
     private val timeProvider: TimeProvider,
     private val observeBackupUseCase: ObserveBackupUseCase,
     private val updateBackupUseCase: UpdateBackupUseCase,
+    private val updateSettingsUseCase: UpdateSettingsUseCase,
     private val observeAppLockStateUseCase: ObserveAppLockStateUseCase
 ) : ViewModel() {
 
@@ -236,6 +241,18 @@ internal class HomeMasterViewModel @Inject constructor(
                     checkDisplayWarning()
                 }
         }
+
+        viewModelScope.launch {
+            settingsFlow
+                .map { it.hasUndecryptableEntries to it.isUndecryptableEntriesWarningDismissed }
+                .distinctUntilChanged()
+                .filter { (hasUndecryptableEntries, isUndecryptableEntriesWarningDismissed) ->
+                    hasUndecryptableEntries && !isUndecryptableEntriesWarningDismissed && !isRefreshingFlow.value
+                }
+                .collect {
+                    dispatchSnackbarEventUseCase(undecryptableEntriesWarningSnackbar())
+                }
+        }
     }
 
     private suspend fun checkDisplayWarning() {
@@ -364,8 +381,11 @@ internal class HomeMasterViewModel @Inject constructor(
                         }
                     }.also { event -> dispatchSnackbarEventUseCase(event) }
                 },
-                onSuccess = {
+                onSuccess = { undecryptableCount ->
                     AuthenticatorLogger.i(tag = TAG, message = "Entries sync succeeded")
+                    if (undecryptableCount > 0 && !settingsFlow.value.isUndecryptableEntriesWarningDismissed) {
+                        dispatchSnackbarEventUseCase(undecryptableEntriesWarningSnackbar())
+                    }
                 }
             ).also {
                 isRefreshingFlow.update { false }
@@ -389,6 +409,20 @@ internal class HomeMasterViewModel @Inject constructor(
         SettingsSortingType.IssuerAsc -> sortedBy { it.issuer.lowercase() }
         SettingsSortingType.IssuerDesc -> sortedByDescending { it.issuer.lowercase() }
     }
+
+    private fun undecryptableEntriesWarningSnackbar() = SnackbarEvent(
+        messageResId = sharedR.string.warning_undecryptable_entries,
+        action = SnackbarEvent.Action(
+            nameResId = sharedR.string.action_dismiss,
+            onAction = {
+                viewModelScope.launch {
+                    updateSettingsUseCase(
+                        settingsFlow.value.copy(isUndecryptableEntriesWarningDismissed = true)
+                    )
+                }
+            }
+        )
+    )
 
     private companion object {
 

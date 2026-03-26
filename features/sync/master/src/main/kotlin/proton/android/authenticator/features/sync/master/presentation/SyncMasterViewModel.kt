@@ -75,7 +75,11 @@ internal class SyncMasterViewModel @Inject constructor(
     internal fun onEnableSync(settings: Settings) {
         viewModelScope.launch {
             settings
-                .copy(isSyncEnabled = true)
+                .copy(
+                    isSyncEnabled = true,
+                    isUndecryptableEntriesWarningDismissed = false,
+                    hasUndecryptableEntries = false
+                )
                 .let { updatedSettings -> updateSettingsUseCase(settings = updatedSettings) }
                 .let { answer ->
                     when (answer) {

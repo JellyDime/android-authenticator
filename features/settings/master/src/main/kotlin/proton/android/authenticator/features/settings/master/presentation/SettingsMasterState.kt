@@ -74,6 +74,7 @@ internal sealed interface SettingsMasterState {
             sortingType = settings.sortingType,
             isPassBannerDismissed = settings.isPassBannerDismissed,
             isUndecryptableEntriesWarningDismissed = settings.isUndecryptableEntriesWarningDismissed,
+            hasUndecryptableEntries = settings.hasUndecryptableEntries,
             isFirstRun = settings.isFirstRun,
             installationTime = settings.installationTime
         )
