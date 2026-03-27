@@ -1,0 +1,12 @@
+## 1.3.7 (2026-03-27)
+
+### Fixes :bug:
+
+- Fix QR code scanning.
+- Fix snackbar message shown multiple times.
+- Fix item creation when account key is changed.
+
+### Other
+
+- Improve global performance if there are a lot of TOTP items.
+- Translation updates.

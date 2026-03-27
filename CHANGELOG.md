@@ -6,6 +6,19 @@
 
 ### Other
 
+## 1.3.7 (2026-03-27)
+
+### Fixes :bug:
+
+- Fix QR code scanning.
+- Fix snackbar message shown multiple times.
+- Fix item creation when account key is changed.
+
+### Other
+
+- Improve global performance if there are a lot of TOTP items.
+- Translation updates.
+
 ## 1.3.6 (2026-01-19)
 
 ### Other
@@ -94,7 +107,7 @@
 
 ### Fix :bug:
 
-- Improved importers for 2FAS, Ente and Google Authenticator. 
+- Improved importers for 2FAS, Ente and Google Authenticator.
 
 ## 1.1.0 (2025-07-31)
 
