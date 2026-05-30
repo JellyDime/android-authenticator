@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - main
-
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -28,19 +30,36 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          cat local.properties
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses || true
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build APK
-        run: ./gradlew :app:assemblePlayProdDebug
+        run: ./gradlew :app:assemblePlayProdDebug --stacktrace
+
+      - name: Debug - List APK outputs
+        if: always()
+        run: |
+          echo "=== Checking for APK files ==="
+          find app/build -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+          echo "=== Directory structure ==="
+          ls -R app/build/outputs/apk 2>/dev/null || echo "apk directory not found"
 
       - name: Locate Built APK
         id: find_apk
         run: |
-          APK_PATH=$(find app/build/outputs/apk/play/prod/debug -name "*.apk" -print -quit)
+          APK_PATH=$(find app/build -name "*.apk" -type f -print -quit)
 
           if [ -z "$APK_PATH" ]; then
-            echo "APK not found!"
+            echo "APK not found! Build may have failed or produced no output."
             exit 1
           fi
 
@@ -65,4 +84,3 @@ jobs:
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
